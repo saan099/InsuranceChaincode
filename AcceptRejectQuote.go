@@ -20,7 +20,6 @@ func (t *InsuranceManagement) AcceptLeadQuote(stub shim.ChaincodeStubInterface, 
 	//args[0]=rfqId
 	//args[1]=quoteId
 	RFQId := args[0]
-	quoteId := args[1]
 
 	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
 	id := &mspprotos.SerializedIdentity{}
@@ -132,7 +131,6 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 	//args[0]=rfqId
 	//args[1]=quoteId
 	RFQId := args[0]
-	quoteId := args[1]
 
 	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
 	id := &mspprotos.SerializedIdentity{}
@@ -187,18 +185,10 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:Lead Insurer not resolved or Incorrect state"))
 	}
 
-	leadQuote := Quote{}
-	leadQuoteAsbytes, err := stub.GetState(rfq.LeadQuote)
-	if err != nil || len(leadQuoteAsbytes) == 0 {
-		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:Lead Quote Not Found"))
-	}
-	err = json.Unmarshal(leadQuoteAsbytes, &leadQuote)
-	if err != nil {
-		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:Lead Quote wasnt Unmarshalled"))
-	}
+	var updatedQuotes []string
 
 	for i := range rfq.Quotes {
-		if rfq.Quotes[i] != leadQuote.QuoteId {
+		if rfq.Quotes[i] != rfq.LeadQuote {
 
 			quote := Quote{}
 			quoteAsBytes, err := stub.GetState(rfq.Quotes[i])
@@ -210,8 +200,8 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 				return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:couldnt unmarshal a quote"))
 			}
 			if quote.InsurerId == insurerAddress {
-				quote.Premium = leadQuote.Premium
-				quote.Status = QUOTE_ACCEPTED
+
+				quote.Status = QUOTE_REJECTED
 				newQuoteAsbytes, err := json.Marshal(quote)
 				if err != nil {
 					return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:couldnt marshal a quote"))
@@ -220,9 +210,13 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 				if err != nil {
 					return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:couldnt write state for a quote"))
 				}
+			} else {
+				updatedQuotes = append(updatedQuotes, rfq.Quotes[i])
 			}
 		}
 	}
+
+	rfq.Quotes = updatedQuotes
 
 	finalRfqAsBytes, err := json.Marshal(rfq)
 	if err != nil {

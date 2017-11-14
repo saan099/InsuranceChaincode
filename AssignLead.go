@@ -74,7 +74,6 @@ func (t *InsuranceManagement) SelectLeadInsurerByClient(stub shim.ChaincodeStubI
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt unmarshal rfq "))
 	}
 	flag = 1
-	var leadInsurerId string
 	quoteArrayLength := len(rfq.Quotes)
 	for i := 0; i < quoteArrayLength; i++ {
 		if rfq.Quotes[i] == QuoteId {
@@ -187,7 +186,6 @@ func (t *InsuranceManagement) SelectLeadInsurerByBroker(stub shim.ChaincodeStubI
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt unmarshal rfq "))
 	}
 	flag = 1
-	var leadInsurerId string
 	quoteArrayLength := len(rfq.Quotes)
 	for i := 0; i < quoteArrayLength; i++ {
 		if rfq.Quotes[i] == QuoteId {
