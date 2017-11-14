@@ -24,9 +24,9 @@ type RFQ struct {
 	RiskLocation    string   `json:"riskLocation"`
 	Status          string   `json:"status"`
 	Quotes          []string `json:"quotes"`
+	LeadQuote       string   `json:"leadQuote"`
 	SelectedInsurer []string `json:"selectedInsurer"`
 	LeadInsurer     string   `json:"leadInsurerQuote"`
-	FinalInsurer    []string `json:"finalInsurer"`
 	// ClientProposal string `json:clientProposal`
 
 }
@@ -50,12 +50,13 @@ type Broker struct {
 }
 
 type Quote struct {
-	QuoteId     string `json:"quoteId"`
-	InsurerName string `json:"insurerName"`
-	InsurerId   string `json:"insurerId"`
-	Premium     string `json:"premium"`
-	Capacity    string `json:"capacity"`
-	RFQId       string `json:"rfqId"`
+	QuoteId     string  `json:"quoteId"`
+	InsurerName string  `json:"insurerName"`
+	InsurerId   string  `json:"insurerId"`
+	Premium     float64 `json:"premium"`
+	Capacity    float64 `json:"capacity"`
+	RFQId       string  `json:"rfqId"`
+	Status      string  `json:"status"`
 }
 
 // type RevisedQuote struct {

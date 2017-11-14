@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -60,6 +61,129 @@ func (t *InsuranceManagement) InitInsurer(stub shim.ChaincodeStubInterface, args
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::couldn't write state "))
 	}
+	return shim.Success(nil)
+
+}
+
+//============================provideQuote==============================================
+
+func (t *InsuranceManagement) ProvideQuote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	//args[0]=RFQID
+	//args[1]=Premium
+	//args[2]=Capacity
+
+	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
+	id := &mspprotos.SerializedIdentity{}
+	err = proto.Unmarshal(creator, id)
+
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt unmarshal creator"))
+	}
+	block, _ := pem.Decode(id.GetIdBytes())
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt parse certificate"))
+	}
+	invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
+	insurerAddress := hex.EncodeToString(invokerhash[:])
+
+	insurerAsBytes, err := stub.GetState(insurerAddress)
+	if err != nil || insurerAsBytes == nil {
+		shim.Error(fmt.Sprintf("chaincode:ProvideQuote::account doesnt exists"))
+
+	}
+	rfqId := args[0]
+
+	insurer := Insurer{}
+
+	err = json.Unmarshal(insurerAsBytes, &insurer)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt unmarshal insurer "))
+	}
+	var found bool = false
+	for i := range insurer.RFQArray {
+		if insurer.RFQArray[i] == rfqId {
+			found = true
+			break
+		}
+	}
+	if found == false {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:You dont have any such RFQ."))
+	}
+
+	rfqAsBytes, err := stub.GetState(rfqId)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::generateRfQ:RFQ doesnt exists"))
+	}
+
+	rfq := RFQ{}
+
+	err = json.Unmarshal(rfqAsBytes, &rfq)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::couldnt unmarshal rfq "))
+	}
+
+	quote := Quote{}
+	quoteHash := sha256.Sum256([]byte(cert.Subject.CommonName + rfqId))
+	quoteAddress := hex.EncodeToString(quoteHash[:])
+
+	quote.QuoteId = quoteAddress
+	quote.InsurerName = insurer.InsurerName
+	quote.InsurerId = insurerAddress
+	quote.Premium, err = strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::expected float premium "))
+	}
+	quote.Capacity, err = strconv.ParseFloat(args[2], 64)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::expected float capacity"))
+	}
+	quote.RFQId = rfq.RFQId
+	quote.Status = QUOTE_INITIALIZED
+
+	quoteAsBytes, err := json.Marshal(quote)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt marshal quote "))
+	}
+
+	err = stub.PutState(quoteAddress, quoteAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt put state quote "))
+	}
+
+	rfq.Quotes = append(rfq.Quotes, quoteAddress)
+
+	finalRFQAsBytes, err := json.Marshal(rfq)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::couldnt marshal RFQ "))
+	}
+
+	err = stub.PutState(rfqId, finalRFQAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt put state rfq "))
+	}
+	var exists bool = false
+	for i := range insurer.Quotes {
+		if insurer.Quotes[i] == quoteAddress {
+			exists = true
+			break
+		}
+	}
+	if exists == true {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:You've already provided quote for this RFQ "))
+	}
+
+	insurer.Quotes = append(insurer.Quotes, quote.QuoteId)
+	finalInsurerAsBytes, err := json.Marshal(insurer)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt marshal RFQ "))
+	}
+	err = stub.PutState(insurerAddress, finalInsurerAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote:couldnt put state client "))
+	}
+
 	return shim.Success(nil)
 
 }
