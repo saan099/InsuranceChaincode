@@ -1,5 +1,6 @@
-package main
 
+package main
+/*
 import (
 	"crypto/sha256"
 	//"reflect"
@@ -231,3 +232,4 @@ func (t *InsuranceManagement) SelectLeadInsurerByBroker(stub shim.ChaincodeStubI
 	return shim.Success(nil)
 
 }
+*/

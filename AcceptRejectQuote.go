@@ -1,5 +1,6 @@
-package main
 
+package main
+/*
 import (
 	"crypto/sha256"
 	"crypto/x509"
@@ -237,3 +238,4 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 
 }
+*/

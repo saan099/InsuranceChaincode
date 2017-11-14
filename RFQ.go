@@ -58,14 +58,14 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 
 	clientAsBytes, err := stub.GetState(clientAddress)
 	if err != nil || len(clientAsBytes) == 0 {
-		shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::account doesnt exists"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::account doesnt exists"))
 
 	}
 	client := Client{}
 
 	err = json.Unmarshal(clientAsBytes, &client)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt unmarshal client "))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ:: couldnt unmarshal client"))
 	}
 	tym := time.Now()
 	tym.Format("Mon Jan _2 15:04:05 2006")
@@ -81,7 +81,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 
 	for i := 4; i < NumberOfInsurer+4; i++ {
 		rfq.SelectedInsurer = append(rfq.SelectedInsurer, args[i])
-		insurerAsBytes, err := stub.GetState(args[i])
+		/*insurerAsBytes, err := stub.GetState(args[i])
 		if err != nil {
 			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:can't get %dth insurer provided", i-3))
 		}
@@ -98,7 +98,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 		err = stub.PutState(args[i], finalInsurerAsBytes)
 		if err != nil {
 			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:couldnt putstate the finalInsurerAsBytes "))
-		}
+		} */
 
 	}
 

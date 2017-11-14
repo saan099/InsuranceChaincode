@@ -79,8 +79,6 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 
 		return t.InitClientByBroker(stub, args) //done
 
-	} else if function == "selectLeadInsurerByClient" {
-		return t.SelectLeadInsurerByClient(stub, args) //done
 	} else if function == "readAcc" {
 		return t.ReadAcc(stub, args)
 	} else if function == "readAllRFQ" {
