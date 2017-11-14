@@ -88,7 +88,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 		insurer := Insurer{}
 		err = json.Unmarshal(insurerAsBytes, &insurer)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt unmarshal client "))
+			return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt unmarshal insurer "))
 		}
 		insurer.RFQArray = append(insurer.RFQArray, rfqId)
 		finalInsurerAsBytes, err := json.Marshal(insurer)

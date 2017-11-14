@@ -1,7 +1,7 @@
 package main
 
 type Client struct {
-	ClientId   string   `json:"insureId"`
+	ClientId   string   `json:"clientId"`
 	ClientName string   `json:"clientName"`
 	Policies   []string `json:"policies"`
 	RFQArray   []string `json:"rfqArray"`
