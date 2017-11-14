@@ -57,7 +57,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	clientAddress := hex.EncodeToString(invokerhash[:])
 
 	clientAsBytes, err := stub.GetState(clientAddress)
-	if err != nil || clientAsBytes == nil {
+	if err != nil || len(clientAsBytes) == 0 {
 		shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::account doesnt exists"))
 
 	}
@@ -211,7 +211,7 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	tym := time.Now()
 	tym.Format("Mon Jan _2 15:04:05 2006")
 	rfq := RFQ{}
-	rfq.ClientId = clientId
+	rfq.ClientId = brokerAddress
 	rfq.RFQId = rfqId
 	rfq.RiskAmount = RiskAmount
 	rfq.TypeOfInsurance = TypeOfInsurance
