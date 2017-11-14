@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "yqF125xVSkmfLpIVGrLlfE05IUk=",
+			"path": "github.com/golang/protobuf/proto",
+			"revision": "1e59b77b52bf8e4b449a57e6f79f21226d571845",
+			"revisionTime": "2017-11-13T18:07:20Z"
+		},
+		{
+			"checksumSHA1": "TZYFb56xm5pvmVnqqUKF/eBAtr4=",
+			"path": "github.com/hyperledger/fabric/protos/msp",
+			"revision": "decb95f8e34336b37d7e94f06da03f37eb69a15f",
+			"revisionTime": "2017-11-14T03:17:23Z"
+		}
+	],
+	"rootPath": "InsuranceChaincode"
+}
