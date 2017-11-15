@@ -92,6 +92,12 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.AcceptLeadQuote(stub, args)
 	} else if function == "rejectLeadQuote" {
 		return t.RejectLeadQuote(stub, args)
+	} else if function == "readSingleRFQ" {
+		return t.ReadSingleRFQ(stub, args)
+	} else if function == "readRFQByRange" {
+		return t.ReadRFQByRange(stub, args)
+	} else if function == "readClientOfBroker" {
+		return t.ReadClientOfBroker(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
@@ -121,7 +127,7 @@ func (t *InsuranceManagement) ReadAcc(stub shim.ChaincodeStubInterface, args []s
 
 	invokerAsBytes, err := stub.GetState(invokerAddress)
 	if err != nil || len(invokerAsBytes) == 0 {
-		shim.Error(fmt.Sprintf("chaincode:readAcc::account doesnt exists"))
+		return shim.Error(fmt.Sprintf("chaincode:readAcc::account doesnt exists"))
 
 	}
 	return shim.Success(invokerAsBytes)
