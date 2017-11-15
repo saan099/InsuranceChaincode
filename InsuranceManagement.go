@@ -81,14 +81,12 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.AcceptLeadQuote(stub, args)
 	} else if function == "rejectLeadQuote" {
 		return t.RejectLeadQuote(stub, args)
-<<<<<<< HEAD
 	} else if function == "readSingleRFQ" {
 		return t.ReadSingleRFQ(stub, args)
 	} else if function == "readRFQByRange" {
 		return t.ReadRFQByRange(stub, args)
 	} else if function == "readClientOfBroker" {
 		return t.ReadClientOfBroker(stub, args)
-=======
 	} else if function == "finalizeQuotesByClient" {
 		return t.FinalizeQuotesByClient(stub, args)
 	} else if function == "finalizeQuotesByBroker" {
@@ -97,7 +95,6 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.UploadProposalFormByClient(stub, args)
 	} else if function == "UploadProposalFormByBroker" {
 		return t.UploadProposalFormByBroker(stub, args)
->>>>>>> 7d9967c98dd0963274a1587ee1a5d92ee7437514
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
