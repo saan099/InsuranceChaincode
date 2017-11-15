@@ -215,6 +215,13 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 			}
 		}
 	}
+	var insurerList []string
+	for i := range rfq.SelectedInsurer {
+		if insurerAddress != rfq.SelectedInsurer[i] {
+			insurerList = append(insurerList, rfq.SelectedInsurer[i])
+		}
+	}
+	rfq.SelectedInsurer = insurerList
 
 	rfq.Quotes = updatedQuotes
 

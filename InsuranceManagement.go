@@ -31,6 +31,8 @@ const QUOTES_FINALIZED string = "Quotes Finalized"
 const PROPOSAL_INITIALIZED string = "Proposal Initialized"
 const PROPOSAL_PAYMENT_MARKED string = "Proposal Payment Marked"
 
+const POLICY_INITIALIZED string = "Policy Initialized"
+
 const INTERMEDIARY_CLIENT string = "Intermediary Client"
 const INTERMEDIARY_BROKER string = "Intermediary Broker"
 
