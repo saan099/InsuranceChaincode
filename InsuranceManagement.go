@@ -19,9 +19,13 @@ import (
 )
 
 const LEAD_ASSIGNED string = "Lead Assigned"
+const RFQ_QUOTES_FINALIZED string = "RFQ Quotes finalized"
+const RFQ_PROPOSAL_FINALIZED string = "RFQ Proposal Finalized"
+
 const QUOTE_INITIALIZED string = "Quote Initialized"
 const QUOTE_ACCEPTED string = "Quote Accepted"
 const QUOTE_REJECTED string = "Quote Rejected"
+const QUOTES_FINALIZED string = "Quotes Finalized"
 
 type InsuranceManagement struct {
 }
@@ -52,38 +56,23 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "initClient" {
-
 		return t.InitClient(stub, args) //done
-
 	} else if function == "initInsurer" {
-
 		return t.InitInsurer(stub, args) //done
-
 	} else if function == "generateRFQByClient" {
-
 		return t.GenerateRFQByClient(stub, args) //done
-
 	} else if function == "provideQuote" {
-
 		return t.ProvideQuote(stub, args) //done
-
 	} else if function == "initBroker" {
-
 		return t.InitBroker(stub, args) //done
-
 	} else if function == "generateRFQByBroker" {
-
 		return t.GenerateRFQByBroker(stub, args) //done
-
 	} else if function == "initClientByBroker" {
-
 		return t.InitClientByBroker(stub, args) //done
-
 	} else if function == "selectLeadInsurerByClient" {
 		return t.SelectLeadInsurerByClient(stub, args) //done
 	} else if function == "selectLeadInsurerByBroker" {
 		return t.SelectLeadInsurerByBroker(stub, args) //done
-
 	} else if function == "readAcc" {
 		return t.ReadAcc(stub, args)
 	} else if function == "readAllRFQ" {
@@ -92,12 +81,23 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.AcceptLeadQuote(stub, args)
 	} else if function == "rejectLeadQuote" {
 		return t.RejectLeadQuote(stub, args)
+<<<<<<< HEAD
 	} else if function == "readSingleRFQ" {
 		return t.ReadSingleRFQ(stub, args)
 	} else if function == "readRFQByRange" {
 		return t.ReadRFQByRange(stub, args)
 	} else if function == "readClientOfBroker" {
 		return t.ReadClientOfBroker(stub, args)
+=======
+	} else if function == "finalizeQuotesByClient" {
+		return t.FinalizeQuotesByClient(stub, args)
+	} else if function == "finalizeQuotesByBroker" {
+		return t.FinalizeQuotesByBroker(stub, args)
+	} else if function == "uploadProposalFormByClient" {
+		return t.UploadProposalFormByClient(stub, args)
+	} else if function == "UploadProposalFormByBroker" {
+		return t.UploadProposalFormByBroker(stub, args)
+>>>>>>> 7d9967c98dd0963274a1587ee1a5d92ee7437514
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

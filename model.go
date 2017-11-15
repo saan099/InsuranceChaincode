@@ -27,6 +27,7 @@ type RFQ struct {
 	LeadQuote       string   `json:"leadQuote"`
 	SelectedInsurer []string `json:"selectedInsurer"`
 	LeadInsurer     string   `json:"leadInsurerQuote"`
+	ProposalDocHash string   `json:"proposalDocHash"`
 	// ClientProposal string `json:clientProposal`
 
 }
