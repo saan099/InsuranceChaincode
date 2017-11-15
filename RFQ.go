@@ -76,7 +76,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	rfq.TypeOfInsurance = TypeOFinsurance
 	rfq.InsuredName = InsurerClient
 	rfq.Status = "RFQ fired on " + tym.String()
-
+	rfq.Intermediary = INTERMEDIARY_CLIENT
 	//var insurerArray []string
 
 	for i := 4; i < NumberOfInsurer+4; i++ {
@@ -217,7 +217,7 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	rfq.TypeOfInsurance = TypeOfInsurance
 	rfq.InsuredName = InsurerClient
 	rfq.Status = "RFQ fired on " + tym.String()
-
+	rfq.Intermediary = INTERMEDIARY_BROKER
 	//var insurerArray []string
 
 	for i := 5; i < NumberOfInsurer+5; i++ {

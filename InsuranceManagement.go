@@ -21,11 +21,18 @@ import (
 const LEAD_ASSIGNED string = "Lead Assigned"
 const RFQ_QUOTES_FINALIZED string = "RFQ Quotes finalized"
 const RFQ_PROPOSAL_FINALIZED string = "RFQ Proposal Finalized"
+const RFQ_COMPLETED string = "RFQ Completed"
 
 const QUOTE_INITIALIZED string = "Quote Initialized"
 const QUOTE_ACCEPTED string = "Quote Accepted"
 const QUOTE_REJECTED string = "Quote Rejected"
 const QUOTES_FINALIZED string = "Quotes Finalized"
+
+const PROPOSAL_INITIALIZED string = "Proposal Initialized"
+const PROPOSAL_PAYMENT_MARKED string = "Proposal Payment Marked"
+
+const INTERMEDIARY_CLIENT string = "Intermediary Client"
+const INTERMEDIARY_BROKER string = "Intermediary Broker"
 
 type InsuranceManagement struct {
 }
@@ -89,6 +96,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.UploadProposalFormByClient(stub, args)
 	} else if function == "UploadProposalFormByBroker" {
 		return t.UploadProposalFormByBroker(stub, args)
+	} else if function == "allotProposalNumber" {
+		return t.AllotProposalNumber(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
