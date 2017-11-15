@@ -81,7 +81,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 
 	for i := 4; i < NumberOfInsurer+4; i++ {
 		rfq.SelectedInsurer = append(rfq.SelectedInsurer, args[i])
-		/*insurerAsBytes, err := stub.GetState(args[i])
+		insurerAsBytes, err := stub.GetState(args[i])
 		if err != nil {
 			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:can't get %dth insurer provided", i-3))
 		}
@@ -98,7 +98,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 		err = stub.PutState(args[i], finalInsurerAsBytes)
 		if err != nil {
 			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:couldnt putstate the finalInsurerAsBytes "))
-		} */
+		} 
 
 	}
 
