@@ -104,6 +104,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.UploadProposalFormByBroker(stub, args)
 	} else if function == "allotProposalNumber" {
 		return t.AllotProposalNumber(stub, args)
+	}else if function == "readAllProposal" {
+		return t.ReadAllProposal(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
