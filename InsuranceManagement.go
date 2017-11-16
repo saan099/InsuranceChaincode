@@ -69,19 +69,19 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 	} else if function == "initInsurer" {
 		return t.InitInsurer(stub, args) //done
 	} else if function == "generateRFQByClient" {
-		return t.GenerateRFQByClient(stub, args) //done
+		return t.GenerateRFQByClient(stub, args)
 	} else if function == "provideQuote" {
-		return t.ProvideQuote(stub, args) //done
+		return t.ProvideQuote(stub, args)
 	} else if function == "initBroker" {
 		return t.InitBroker(stub, args) //done
 	} else if function == "generateRFQByBroker" {
-		return t.GenerateRFQByBroker(stub, args) //done
+		return t.GenerateRFQByBroker(stub, args)
 	} else if function == "initClientByBroker" {
 		return t.InitClientByBroker(stub, args) //done
 	} else if function == "selectLeadInsurerByClient" {
-		return t.SelectLeadInsurerByClient(stub, args) //done
+		return t.SelectLeadInsurerByClient(stub, args)
 	} else if function == "selectLeadInsurerByBroker" {
-		return t.SelectLeadInsurerByBroker(stub, args) //done
+		return t.SelectLeadInsurerByBroker(stub, args)
 	} else if function == "readAcc" {
 		return t.ReadAcc(stub, args)
 	} else if function == "readAllRFQ" {

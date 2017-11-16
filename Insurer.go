@@ -144,6 +144,15 @@ func (t *InsuranceManagement) ProvideQuote(stub shim.ChaincodeStubInterface, arg
 	}
 	quote.RFQId = rfq.RFQId
 	quote.Status = QUOTE_INITIALIZED
+	quoteTransactionRecord := TransactionRecord{}
+	quoteTransactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::couldnt get timestamp for transaction"))
+	}
+	quoteTransactionRecord.Timestamp = timestamp.String()
+	quoteTransactionRecord.Message = "Quote Generated for by " + insurerAddress
+	quote.TransactionHistory = append(quote.TransactionHistory, quoteTransactionRecord)
 
 	quoteAsBytes, err := json.Marshal(quote)
 	if err != nil {
@@ -156,6 +165,11 @@ func (t *InsuranceManagement) ProvideQuote(stub shim.ChaincodeStubInterface, arg
 	}
 
 	rfq.Quotes = append(rfq.Quotes, quoteAddress)
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Quote Generated for by " + insurerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	finalRFQAsBytes, err := json.Marshal(rfq)
 	if err != nil {

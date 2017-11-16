@@ -75,6 +75,15 @@ func (t *InsuranceManagement) AcceptLeadQuote(stub shim.ChaincodeStubInterface, 
 	if rfq.Status != LEAD_ASSIGNED {
 		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:Lead Insurer not resolved or Incorrect state"))
 	}
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AcceptLeadQuote::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Lead Quote rate matched by " + insurerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	leadQuote := Quote{}
 	leadQuoteAsbytes, err := stub.GetState(rfq.LeadQuote)
@@ -101,6 +110,7 @@ func (t *InsuranceManagement) AcceptLeadQuote(stub shim.ChaincodeStubInterface, 
 			if quote.InsurerId == insurerAddress {
 				quote.Premium = leadQuote.Premium
 				quote.Status = QUOTE_ACCEPTED
+				quote.TransactionHistory = append(quote.TransactionHistory, transactionRecord)
 				newQuoteAsbytes, err := json.Marshal(quote)
 				if err != nil {
 					return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:couldnt marshal a quote"))
@@ -187,6 +197,16 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 		return shim.Error(fmt.Sprintf("Chaincode:RejectLeadQuote:Lead Insurer not resolved or Incorrect state"))
 	}
 
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:RejectLeadQuote::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Lead Quote rate rejected by " + insurerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
 	var updatedQuotes []string
 
 	for i := range rfq.Quotes {
@@ -207,6 +227,7 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 			if quote.InsurerId == insurerAddress {
 
 				quote.Status = QUOTE_REJECTED
+				quote.TransactionHistory = append(quote.TransactionHistory, transactionRecord)
 				newQuoteAsbytes, err := json.Marshal(quote)
 				if err != nil {
 					return shim.Error(fmt.Sprintf("Chaincode:RejectLeadQuote:couldnt marshal a quote"))
