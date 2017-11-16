@@ -18,7 +18,9 @@ import (
 
 //=======================================================GenerateRFQByClient================================
 func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
+	if len(args) < 7 {
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::Argument number less than expected"))
+	}
 	//args[0]=RFQID generated on the client side
 	//args[1]=ClientId
 	//args[2]=InsurerName
@@ -33,7 +35,9 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::Risk Amount not float"))
 	}
-	NumberOfInsurer, err := strconv.Atoi(args[3])
+	startDate := args[3]
+	endDate := args[4]
+	NumberOfInsurer, err := strconv.Atoi(args[5])
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::number of insurer is not int"))
 	}
@@ -75,11 +79,13 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	rfq.RiskAmount = RiskAmount
 	rfq.TypeOfInsurance = TypeOFinsurance
 	rfq.InsuredName = InsurerClient
+	rfq.StartDate = startDate
+	rfq.EndDate = endDate
 	rfq.Status = "RFQ fired on " + tym.String()
 	rfq.Intermediary = INTERMEDIARY_CLIENT
 	//var insurerArray []string
 
-	for i := 4; i < NumberOfInsurer+4; i++ {
+	for i := 6; i < NumberOfInsurer+6; i++ {
 		rfq.SelectedInsurer = append(rfq.SelectedInsurer, args[i])
 		insurerAsBytes, err := stub.GetState(args[i])
 		if err != nil {
@@ -98,7 +104,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 		err = stub.PutState(args[i], finalInsurerAsBytes)
 		if err != nil {
 			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:couldnt putstate the finalInsurerAsBytes "))
-		} 
+		}
 
 	}
 
@@ -132,6 +138,9 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 
 func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	if len(args) < 8 {
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::Argument number less than expected"))
+	}
 	//args[0]=RFQID generated on the client side
 	//args[1]=ClientId
 	//args[2]=InsurerName
@@ -147,10 +156,13 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:risk amount is not float"))
 	}
-	NumberOfInsurer, err := strconv.Atoi(args[4])
+	startDate := args[4]
+	endDate := args[5]
+	NumberOfInsurer, err := strconv.Atoi(args[6])
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:number of insurer is not int"))
 	}
+
 	if NumberOfInsurer < 1 {
 		return shim.Error("chaincode:GenerateRFQByBroker:provide atleast one insurer")
 	}
@@ -216,11 +228,13 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	rfq.RiskAmount = RiskAmount
 	rfq.TypeOfInsurance = TypeOfInsurance
 	rfq.InsuredName = InsurerClient
+	rfq.StartDate = startDate
+	rfq.EndDate = endDate
 	rfq.Status = "RFQ fired on " + tym.String()
 	rfq.Intermediary = INTERMEDIARY_BROKER
 	//var insurerArray []string
 
-	for i := 5; i < NumberOfInsurer+5; i++ {
+	for i := 7; i < NumberOfInsurer+7; i++ {
 		rfq.SelectedInsurer = append(rfq.SelectedInsurer, args[i])
 		insurer := Insurer{}
 		insurerAsbytes, err := stub.GetState(args[i])

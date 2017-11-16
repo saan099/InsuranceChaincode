@@ -174,7 +174,7 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 	insurerAddress := hex.EncodeToString(invokerhash[:])
 
 	insurerAsbytes, err := stub.GetState(insurerAddress)
-	if err != nil || insurerAsbytes == nil {
+	if err != nil || len(insurerAsbytes) == 0 {
 		shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::account doesnt exists"))
 
 	}
@@ -218,7 +218,7 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 	}
 
 	proposal := Proposal{}
-	proposal.PolicyNum = proposalNumber
+	proposal.ProposalNum = proposalNumber
 	proposal.RFQId = rfqId
 	proposal.Status = PROPOSAL_INITIALIZED
 	proposalAsBytes, err := json.Marshal(proposal)
@@ -245,6 +245,10 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 		clientAsbytes, err := stub.GetState(clientOrBrokerAddress)
 		if err != nil || len(clientAsbytes) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt read client account or account doesnt exist"))
+		}
+		err = json.Unmarshal(clientAsbytes, &client)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt unmarshal client"))
 		}
 		client.ProposalArray = append(client.ProposalArray, proposalNumber)
 		newClientAsbytes, err := json.Marshal(client)
@@ -282,6 +286,14 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 
 func (t *InsuranceManagement) MarkPaymentAndGeneratePolicy(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	if len(args) != 3 {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::Wrong number of arguments"))
+	}
+
+	proposalNumber := args[0]
+	policyNumber := args[1]
+	policyDocHash := args[2]
+
 	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
 	id := &mspprotos.SerializedIdentity{}
 	err = proto.Unmarshal(creator, id)
@@ -307,6 +319,111 @@ func (t *InsuranceManagement) MarkPaymentAndGeneratePolicy(stub shim.ChaincodeSt
 	err = json.Unmarshal(insurerAsbytes, &insurer)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt unmarshal client "))
+	}
+	var found bool = false
+	for i := range insurer.ProposalArray {
+		if insurer.ProposalArray[i] == proposalNumber {
+			found = true
+			break
+		}
+	}
+
+	if found == false {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt find proposal in insurer stack"))
+	}
+
+	proposal := Proposal{}
+	proposalAsbytes, err := stub.GetState(proposalNumber)
+	if err != nil || len(proposalAsbytes) == 0 {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt read proposal or proposal doesnt exist"))
+	}
+	err = json.Unmarshal(proposalAsbytes, &proposal)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::proposal couldnt unmarshal"))
+	}
+	proposal.Status = PROPOSAL_PAYMENT_MARKED
+	newProposalAsbytes, err := json.Marshal(proposal)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::proposal couldnt marshal"))
+	}
+	err = stub.PutState(proposalNumber, newProposalAsbytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::proposal couldnt put state"))
+	}
+	rfq := RFQ{}
+	rfqId := proposal.RFQId
+	rfqAsbytes, err := stub.GetState(rfqId)
+	if err != nil || len(rfqAsbytes) == 0 {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt read rfq or rfq doesnt exist"))
+	}
+	err = json.Unmarshal(rfqAsbytes, &rfq)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt unmarshal rfq"))
+	}
+	clientOrBrokerAddress := rfq.ClientId
+
+	policy := Policy{}
+	policy.PolicyNumber = policyNumber
+	policy.ProposalNum = proposalNumber
+	policy.Details = rfq
+	policy.PolicyDocHash = policyDocHash
+	policy.Status = POLICY_INITIALIZED
+
+	policyAsbytes, err := json.Marshal(policy)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal policy"))
+	}
+
+	err = stub.PutState(policyNumber, policyAsbytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt put state of policy"))
+	}
+
+	insurer.Policies = append(insurer.Policies, policyNumber)
+	newInsurerasbytes, err := json.Marshal(insurer)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal insurer"))
+	}
+	err = stub.PutState(insurerAddress, newInsurerasbytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt put state insurer"))
+	}
+
+	if rfq.Intermediary == INTERMEDIARY_CLIENT {
+		client := Client{}
+		clientAsbytes, err := stub.GetState(clientOrBrokerAddress)
+		if err != nil || len(clientAsbytes) == 0 {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt read client account or account doesnt exist"))
+		}
+		client.Policies = append(client.Policies, policyNumber)
+		newClientAsbytes, err := json.Marshal(client)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal client"))
+		}
+		err = stub.PutState(clientOrBrokerAddress, newClientAsbytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt put client state"))
+		}
+	} else {
+		broker := Broker{}
+		brokerAsbytes, err := stub.GetState(clientOrBrokerAddress)
+		if err != nil || len(brokerAsbytes) == 0 {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt read broker address or broker doesnt exist"))
+		}
+		err = json.Unmarshal(brokerAsbytes, &broker)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt unmarshal broker"))
+		}
+		broker.Policies = append(broker.Policies, policyNumber)
+		newBrokerAsbytes, err := json.Marshal(broker)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal broker"))
+		}
+		err = stub.PutState(clientOrBrokerAddress, newBrokerAsbytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt put state for broker"))
+		}
+
 	}
 
 	return shim.Success(nil)

@@ -49,10 +49,6 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt unmarshal client "))
 	}
 
-	if len(args) == 0 {
-		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:Wrong number of quotes"))
-	}
-
 	var found bool = false
 	for i := range client.RFQArray {
 		if client.RFQArray[i] == rfqId {
@@ -73,8 +69,9 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt unmarshal rfq"))
 	}
-
+	initalQuoteList := rfq.Quotes
 	var finalizedQuotes []string
+	var insurerList []string
 	var totalCapacity float64 = 0
 	for i := 2; i < numOfQuotes*2+2; i++ {
 		quoteId := args[i]
@@ -87,7 +84,7 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 			if rfq.Quotes[j] == quoteId {
 				quote := Quote{}
 				quoteAsbytes, err := stub.GetState(quoteId)
-				if err != nil {
+				if err != nil || len(quoteAsbytes) == 0 {
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Quote was not found"))
 				}
 				err = json.Unmarshal(quoteAsbytes, &quote)
@@ -108,6 +105,7 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A quote couldnt PutState"))
 				}
 				finalizedQuotes = append(finalizedQuotes, quoteId)
+				insurerList = append(insurerList, quote.InsurerId)
 				totalCapacity += capacity
 				break
 			}
@@ -118,6 +116,7 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 	}
 
 	rfq.Quotes = finalizedQuotes
+	rfq.SelectedInsurer = insurerList
 	rfq.Status = RFQ_QUOTES_FINALIZED
 
 	newRfqAsbytes, err := json.Marshal(rfq)
@@ -127,6 +126,36 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 	err = stub.PutState(rfqId, newRfqAsbytes)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt putstate rfq"))
+	}
+
+	for i := range initalQuoteList {
+		var quoteFound bool = false
+		for j := range finalizedQuotes {
+			if initalQuoteList[i] == finalizedQuotes[j] {
+				quoteFound = true
+				break
+			}
+		}
+		if quoteFound == false {
+			quote := Quote{}
+			quoteAsbytes, err := stub.GetState(initalQuoteList[i])
+			if err != nil || len(quoteAsbytes) == 0 {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not found"))
+			}
+			err = json.Unmarshal(quoteAsbytes, &quote)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not able to unmarshall"))
+			}
+			quote.Status = QUOTE_REJECTED
+			newQuoteAsbytes, err := json.Marshal(quote)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Marshalled"))
+			}
+			err = stub.PutState(initalQuoteList[i], newQuoteAsbytes)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Put in state"))
+			}
+		}
 	}
 
 	return shim.Success(nil)
@@ -190,8 +219,9 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt unmarshal rfq"))
 	}
-
+	initalQuoteList := rfq.Quotes
 	var finalizedQuotes []string
+	var insurerList []string
 	var totalCapacity float64 = 0
 	for i := 2; i < numOfQuotes*2+2; i++ {
 		quoteId := args[i]
@@ -225,6 +255,7 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A quote couldnt PutState"))
 				}
 				finalizedQuotes = append(finalizedQuotes, quoteId)
+				insurerList = append(insurerList, quote.InsurerId)
 				totalCapacity += capacity
 				break
 			}
@@ -235,6 +266,7 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 	}
 
 	rfq.Quotes = finalizedQuotes
+	rfq.SelectedInsurer = insurerList
 	rfq.Status = RFQ_QUOTES_FINALIZED
 
 	newRfqAsbytes, err := json.Marshal(rfq)
@@ -244,6 +276,35 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 	err = stub.PutState(rfqId, newRfqAsbytes)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt putstate rfq"))
+	}
+	for i := range initalQuoteList {
+		var quoteFound bool = false
+		for j := range finalizedQuotes {
+			if initalQuoteList[i] == finalizedQuotes[j] {
+				quoteFound = true
+				break
+			}
+		}
+		if quoteFound == false {
+			quote := Quote{}
+			quoteAsbytes, err := stub.GetState(initalQuoteList[i])
+			if err != nil || len(quoteAsbytes) == 0 {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not found"))
+			}
+			err = json.Unmarshal(quoteAsbytes, &quote)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not able to unmarshall"))
+			}
+			quote.Status = QUOTE_REJECTED
+			newQuoteAsbytes, err := json.Marshal(quote)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Marshalled"))
+			}
+			err = stub.PutState(initalQuoteList[i], newQuoteAsbytes)
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Put in state"))
+			}
+		}
 	}
 
 	return shim.Success(nil)

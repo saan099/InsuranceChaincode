@@ -24,11 +24,13 @@ type RFQ struct {
 	TypeOfInsurance string   `json:"typeOfInsurance"`
 	RiskAmount      float64  `json:"riskAmount"`
 	RiskLocation    string   `json:"riskLocation"`
+	StartDate       string   `json:"startDate"`
+	EndDate         string   `json:"endDate"`
 	Status          string   `json:"status"`
 	Quotes          []string `json:"quotes"`
 	LeadQuote       string   `json:"leadQuote"`
 	SelectedInsurer []string `json:"selectedInsurer"`
-	LeadInsurer     string   `json:"leadInsurerQuote"`
+	LeadInsurer     string   `json:"leadInsurer"`
 	ProposalDocHash string   `json:"proposalDocHash"`
 	ProposalNum     string   `json:"proposalNum"`
 	Intermediary    string   `json:"intermediary"`
@@ -43,15 +45,13 @@ type Proposal struct {
 	PolicyNum   string `json:"policyNum"`
 }
 
-// type Policy struct {
-// 	PolicyNumber string `json:"policyNumber"`
-// 	InsuredName string `json:"insuredName"`
-// 	SumInsured string `json:"sumInsured"`
-// 	Premium string `json:"premium"`
-// 	StartDate string `json:"startDate"`
-// 	EndDate string `json:"endDate"`
-
-// }
+type Policy struct {
+	PolicyNumber  string `json:"policyNumber"`
+	ProposalNum   string `json:"proposalNum"`
+	PolicyDocHash string `json:"policyDocHash"`
+	Details       RFQ    `json:"details"`
+	Status        string `json:"status"`
+}
 
 type Broker struct {
 	BrokerId      string   `json:"brokerId"`
