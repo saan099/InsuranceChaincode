@@ -69,7 +69,9 @@ func (t *InsuranceManagement) AcceptLeadQuote(stub shim.ChaincodeStubInterface, 
 	if err != nil {
 		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:couldnt unmarshal rfq "))
 	}
-
+	if rfq.Status != LEAD_ASSIGNED {
+		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::Lead not assigned yet"))
+	}
 	if rfq.Status != LEAD_ASSIGNED {
 		return shim.Error(fmt.Sprintf("Chaincode:AcceptLeadQuote:Lead Insurer not resolved or Incorrect state"))
 	}
@@ -198,6 +200,9 @@ func (t *InsuranceManagement) RejectLeadQuote(stub shim.ChaincodeStubInterface, 
 			err = json.Unmarshal(quoteAsBytes, &quote)
 			if err != nil || len(quoteAsBytes) == 0 {
 				return shim.Error(fmt.Sprintf("Chaincode:RejectLeadQuote:couldnt unmarshal a quote"))
+			}
+			if quote.Status != QUOTE_INITIALIZED {
+				return shim.Error(fmt.Sprintf("Chaincode:RejectLeadQuote:Quote has already been resolved as accpeted or rejected"))
 			}
 			if quote.InsurerId == insurerAddress {
 
