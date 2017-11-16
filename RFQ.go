@@ -19,7 +19,7 @@ import (
 //=======================================================GenerateRFQByClient================================
 func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) < 7 {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::Argument number less than expected"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::Argument number less than expected"))
 	}
 	//args[0]=RFQID generated on the client side
 	//args[1]=ClientId
@@ -33,16 +33,16 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	TypeOFinsurance := args[1]
 	RiskAmount, err := strconv.ParseFloat(args[2], 64)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::Risk Amount not float"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::Risk Amount not float"))
 	}
 	startDate := args[3]
 	endDate := args[4]
 	NumberOfInsurer, err := strconv.Atoi(args[5])
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::number of insurer is not int"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::number of insurer is not int"))
 	}
 	if NumberOfInsurer < 1 {
-		return shim.Error("chaincode:GenerateRFQ::provide atleast one insurer")
+		return shim.Error("chaincode:GenerateRFQByClient::provide atleast one insurer")
 	}
 
 	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
@@ -50,26 +50,26 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	err = proto.Unmarshal(creator, id)
 
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt unmarshal creator"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::couldnt unmarshal creator"))
 	}
 	block, _ := pem.Decode(id.GetIdBytes())
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt parse certificate"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::couldnt parse certificate"))
 	}
 	invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
 	clientAddress := hex.EncodeToString(invokerhash[:])
 
 	clientAsBytes, err := stub.GetState(clientAddress)
 	if err != nil || len(clientAsBytes) == 0 {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::account doesnt exists"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::account doesnt exists"))
 
 	}
 	client := Client{}
 
 	err = json.Unmarshal(clientAsBytes, &client)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ:: couldnt unmarshal client"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient:: couldnt unmarshal client"))
 	}
 	tym := time.Now()
 	tym.Format("Mon Jan _2 15:04:05 2006")
@@ -83,51 +83,62 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	rfq.EndDate = endDate
 	rfq.Status = "RFQ fired on " + tym.String()
 	rfq.Intermediary = INTERMEDIARY_CLIENT
+
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Generated an RFQ of Id- " + rfqId + " by " + clientAddress
+
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 	//var insurerArray []string
 
 	for i := 6; i < NumberOfInsurer+6; i++ {
 		rfq.SelectedInsurer = append(rfq.SelectedInsurer, args[i])
 		insurerAsBytes, err := stub.GetState(args[i])
 		if err != nil {
-			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:can't get %dth insurer provided", i-3))
+			return shim.Error(fmt.Sprintf("Chaincode:GenerateRFQByClient:can't get %dth insurer provided", i-3))
 		}
 		insurer := Insurer{}
 		err = json.Unmarshal(insurerAsBytes, &insurer)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("chaincode:GenerateRFQ::couldnt unmarshal insurer "))
+			return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient::couldnt unmarshal insurer "))
 		}
 		insurer.RFQArray = append(insurer.RFQArray, rfqId)
 		finalInsurerAsBytes, err := json.Marshal(insurer)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:can't marshal the finalInsurerAsBytes "))
+			return shim.Error(fmt.Sprintf("Chaincode:GenerateRFQByClient:can't marshal the finalInsurerAsBytes "))
 		}
 		err = stub.PutState(args[i], finalInsurerAsBytes)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("Chaincode:generateRFQ:couldnt putstate the finalInsurerAsBytes "))
+			return shim.Error(fmt.Sprintf("Chaincode:GenerateRFQByClient:couldnt putstate the finalInsurerAsBytes "))
 		}
 
 	}
 
 	rfqAsBytes, err := json.Marshal(rfq)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:generateRfQ couldnt marshal rfq"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient couldnt marshal rfq"))
 	}
 
 	client.RFQArray = append(client.RFQArray, rfqId)
 
 	finalClientAsBytes, err := json.Marshal(client)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:generateRfQ couldnt marshal rfq"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient couldnt marshal rfq"))
 	}
 
 	err = stub.PutState(rfqId, rfqAsBytes)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:generateRfQ couldnt putstate rfq"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient couldnt putstate rfq"))
 	}
 
 	err = stub.PutState(clientAddress, finalClientAsBytes)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:generateRfQ couldnt putstate client"))
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient couldnt putstate client"))
 	}
 
 	return shim.Success(nil)
@@ -232,6 +243,17 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	rfq.EndDate = endDate
 	rfq.Status = "RFQ fired on " + tym.String()
 	rfq.Intermediary = INTERMEDIARY_BROKER
+
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Generated an RFQ of Id- " + rfqId + " by " + brokerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
 	//var insurerArray []string
 
 	for i := 7; i < NumberOfInsurer+7; i++ {

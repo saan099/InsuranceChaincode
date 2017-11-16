@@ -103,6 +103,15 @@ func (t *InsuranceManagement) SelectLeadInsurerByClient(stub shim.ChaincodeStubI
 	rfq.LeadQuote = quote.QuoteId
 	rfq.LeadInsurer = quote.InsurerId
 	rfq.Status = LEAD_ASSIGNED
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurerByClient::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Lead " + rfq.LeadInsurer + " assigned By client"
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	finalRFQAsBytes, err := json.Marshal(rfq)
 	if err != nil {
@@ -114,6 +123,9 @@ func (t *InsuranceManagement) SelectLeadInsurerByClient(stub shim.ChaincodeStubI
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt put RFQ to the state "))
 	}
 	quote.Status = QUOTE_ACCEPTED
+
+	quote.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
 	newQuoteAsbytes, err := json.Marshal(quote)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt marshal quote"))
@@ -215,6 +227,15 @@ func (t *InsuranceManagement) SelectLeadInsurerByBroker(stub shim.ChaincodeStubI
 	rfq.LeadQuote = quote.QuoteId
 	rfq.LeadInsurer = quote.InsurerId
 	rfq.Status = LEAD_ASSIGNED
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurerByBroker::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Lead " + rfq.LeadInsurer + " assigned By broker"
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	finalRFQAsBytes, err := json.Marshal(rfq)
 	if err != nil {
@@ -224,6 +245,18 @@ func (t *InsuranceManagement) SelectLeadInsurerByBroker(stub shim.ChaincodeStubI
 	err = stub.PutState(RFQId, finalRFQAsBytes)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt put RFQ to the state "))
+	}
+	quote.Status = QUOTE_ACCEPTED
+
+	quote.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
+	newQuoteAsbytes, err := json.Marshal(quote)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt marshal quote"))
+	}
+	err = stub.PutState(quote.QuoteId, newQuoteAsbytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:SelectLeadInsurer::couldnt write state"))
 	}
 
 	return shim.Success(nil)

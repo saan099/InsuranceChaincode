@@ -69,6 +69,16 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt unmarshal rfq"))
 	}
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByClient::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Quotes finalized by client-" + clientAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
 	initalQuoteList := rfq.Quotes
 	var finalizedQuotes []string
 	var insurerList []string
@@ -101,6 +111,15 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 				}
 				quote.Capacity = capacity
 				quote.Status = QUOTES_FINALIZED
+				quoteTransactionRecord := TransactionRecord{}
+				quoteTransactionRecord.TxId = stub.GetTxID()
+				timestamp, err := stub.GetTxTimestamp()
+				if err != nil {
+					return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByClient::couldnt get timestamp for transaction"))
+				}
+				quoteTransactionRecord.Timestamp = timestamp.String()
+				quoteTransactionRecord.Message = "Quote finalized as accpeted by client-" + clientAddress
+				quote.TransactionHistory = append(quote.TransactionHistory, quoteTransactionRecord)
 				newQuoteAsbytes, err := json.Marshal(quote)
 				if err != nil {
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Quote couldnt marshal"))
@@ -155,6 +174,15 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not able to unmarshall"))
 			}
 			quote.Status = QUOTE_REJECTED
+			quoteTransactionRecord := TransactionRecord{}
+			quoteTransactionRecord.TxId = stub.GetTxID()
+			timestamp, err := stub.GetTxTimestamp()
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByClient::couldnt get timestamp for transaction"))
+			}
+			quoteTransactionRecord.Timestamp = timestamp.String()
+			quoteTransactionRecord.Message = "Quote finalized as rejected by client-" + clientAddress
+			quote.TransactionHistory = append(quote.TransactionHistory, quoteTransactionRecord)
 			newQuoteAsbytes, err := json.Marshal(quote)
 			if err != nil {
 				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Marshalled"))
@@ -227,6 +255,15 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:couldnt unmarshal rfq"))
 	}
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByBroker::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Quotes finalized by broker-" + brokerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 	initalQuoteList := rfq.Quotes
 	var finalizedQuotes []string
 	var insurerList []string
@@ -254,6 +291,15 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 				}
 				quote.Capacity = capacity
 				quote.Status = QUOTES_FINALIZED
+				quoteTransactionRecord := TransactionRecord{}
+				quoteTransactionRecord.TxId = stub.GetTxID()
+				timestamp, err := stub.GetTxTimestamp()
+				if err != nil {
+					return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByBroker::couldnt get timestamp for transaction"))
+				}
+				quoteTransactionRecord.Timestamp = timestamp.String()
+				quoteTransactionRecord.Message = "Quote finalized as accepted by broker-" + brokerAddress
+				quote.TransactionHistory = append(quote.TransactionHistory, quoteTransactionRecord)
 				newQuoteAsbytes, err := json.Marshal(quote)
 				if err != nil {
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Quote couldnt marshal"))
@@ -304,6 +350,15 @@ func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInte
 				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not able to unmarshall"))
 			}
 			quote.Status = QUOTE_REJECTED
+			quoteTransactionRecord := TransactionRecord{}
+			quoteTransactionRecord.TxId = stub.GetTxID()
+			timestamp, err := stub.GetTxTimestamp()
+			if err != nil {
+				return shim.Error(fmt.Sprintf("chaincode:FinalizeQuotesByBroker::couldnt get timestamp for transaction"))
+			}
+			quoteTransactionRecord.Timestamp = timestamp.String()
+			quoteTransactionRecord.Message = "Quote finalized as rejected by broker-" + brokerAddress
+			quote.TransactionHistory = append(quote.TransactionHistory, quoteTransactionRecord)
 			newQuoteAsbytes, err := json.Marshal(quote)
 			if err != nil {
 				return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:A Rejected Quote was not Marshalled"))

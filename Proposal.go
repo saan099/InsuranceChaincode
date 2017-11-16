@@ -73,6 +73,15 @@ func (t *InsuranceManagement) UploadProposalFormByClient(stub shim.ChaincodeStub
 
 	rfq.Status = RFQ_PROPOSAL_FINALIZED
 	rfq.ProposalDocHash = proposalFormHash
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:UploadProposalFormByClient::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Proposal form uploaded by client-" + clientAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	newRfqAsbytes, err := json.Marshal(rfq)
 	if err != nil {
@@ -144,6 +153,15 @@ func (t *InsuranceManagement) UploadProposalFormByBroker(stub shim.ChaincodeStub
 	}
 	rfq.Status = RFQ_PROPOSAL_FINALIZED
 	rfq.ProposalDocHash = proposalFormHash
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:UploadProposalFormByBroker::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Proposal form uploaded by broker-" + brokerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
 
 	newRfqAsbytes, err := json.Marshal(rfq)
 	if err != nil {
@@ -217,6 +235,16 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 	}
 	rfq.Status = RFQ_COMPLETED
 	rfq.ProposalNum = proposalNumber
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Proposal Number alloted by insurer- " + insurerAddress
+	rfq.TransactionHistory = append(rfq.TransactionHistory, transactionRecord)
+
 	newRFQAsbytes, err := json.Marshal(rfq)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal RFQ"))
@@ -230,6 +258,7 @@ func (t *InsuranceManagement) AllotProposalNumber(stub shim.ChaincodeStubInterfa
 	proposal.ProposalNum = proposalNumber
 	proposal.RFQId = rfqId
 	proposal.Status = PROPOSAL_INITIALIZED
+	proposal.TransactionHistory = append(proposal.TransactionHistory, transactionRecord)
 	proposalAsBytes, err := json.Marshal(proposal)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:AllotProposalNumber::couldnt marshal proposal"))
@@ -373,6 +402,15 @@ func (t *InsuranceManagement) MarkPaymentAndGeneratePolicy(stub shim.ChaincodeSt
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:MarkPaymentAndGeneratePolicy::couldnt unmarshal rfq"))
 	}
+	transactionRecord := TransactionRecord{}
+	transactionRecord.TxId = stub.GetTxID()
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:MarkPaymentAndGeneratePolicy::couldnt get timestamp for transaction"))
+	}
+	transactionRecord.Timestamp = timestamp.String()
+	transactionRecord.Message = "Lead made policy of address- " + policyNumber
+
 	clientOrBrokerAddress := rfq.ClientId
 
 	policy := Policy{}
@@ -381,6 +419,7 @@ func (t *InsuranceManagement) MarkPaymentAndGeneratePolicy(stub shim.ChaincodeSt
 	policy.Details = rfq
 	policy.PolicyDocHash = policyDocHash
 	policy.Status = POLICY_INITIALIZED
+	policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
 
 	policyAsbytes, err := json.Marshal(policy)
 	if err != nil {
