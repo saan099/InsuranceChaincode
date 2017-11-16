@@ -114,6 +114,18 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadProposalByRange(stub, args)
 	} else if function == "markPaymentAndGeneratePolicy" {
 		return t.MarkPaymentAndGeneratePolicy(stub, args)
+	}else if function == "readAllQuote" {
+		return t.ReadAllQuote(stub, args)
+	}else if function == "readQuoteByRange" {
+		return t.ReadQuoteByRange(stub, args)
+	}else if function == "readSingleQuote" {
+		return t.ReadSingleQuote(stub, args)
+	}else if function == "readAllPolicy" {
+		return t.ReadAllPolicy(stub, args)
+	}else if function == "readSinglePolicy" {
+		return t.ReadSinglePolicy(stub, args)
+	}else if function == "readPolicyByRange" {
+		return t.ReadPolicyByRange(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
