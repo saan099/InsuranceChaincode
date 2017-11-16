@@ -108,6 +108,10 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.AllotProposalNumber(stub, args)
 	}else if function == "readAllProposal" {
 		return t.ReadAllProposal(stub, args)
+	}else if function == "readSingleProposal" {
+		return t.ReadSingleProposal(stub, args)
+	}else if function == "readProposalByRange" {
+		return t.ReadProposalByRange(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
