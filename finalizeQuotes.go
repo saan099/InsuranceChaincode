@@ -73,6 +73,7 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 	var finalizedQuotes []string
 	var insurerList []string
 	var totalCapacity float64 = 0
+	var count int = 0
 	for i := 2; i < numOfQuotes*2+2; i++ {
 		quoteId := args[i]
 		i++
@@ -94,6 +95,10 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 				if capacity > quote.Capacity {
 					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:Exceeded maximum capacity set by supplier"))
 				}
+				count++
+				if quote.Status != QUOTE_ACCEPTED {
+					return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:Quote already rejected by insurer"))
+				}
 				quote.Capacity = capacity
 				quote.Status = QUOTES_FINALIZED
 				newQuoteAsbytes, err := json.Marshal(quote)
@@ -110,6 +115,9 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 				break
 			}
 		}
+	}
+	if count != numOfQuotes {
+		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:Some quote didnt get accepted as it is not in the stack. Maybe it was rejected"))
 	}
 	if totalCapacity > 100 {
 		return shim.Error(fmt.Sprintf("chaincode::FinalizeQuote:Total capacity exceeding 100%"))

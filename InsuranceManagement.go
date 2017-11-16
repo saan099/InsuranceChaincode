@@ -102,7 +102,7 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.FinalizeQuotesByBroker(stub, args)
 	} else if function == "uploadProposalFormByClient" {
 		return t.UploadProposalFormByClient(stub, args)
-	} else if function == "UploadProposalFormByBroker" {
+	} else if function == "uploadProposalFormByBroker" {
 		return t.UploadProposalFormByBroker(stub, args)
 	} else if function == "allotProposalNumber" {
 		return t.AllotProposalNumber(stub, args)
@@ -112,6 +112,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadSingleProposal(stub, args)
 	}else if function == "readProposalByRange" {
 		return t.ReadProposalByRange(stub, args)
+	} else if function == "markPaymentAndGeneratePolicy" {
+		return t.MarkPaymentAndGeneratePolicy(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

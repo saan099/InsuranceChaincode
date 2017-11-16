@@ -123,6 +123,9 @@ func (t *InsuranceManagement) ProvideQuote(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::couldnt unmarshal rfq "))
 	}
+	// if rfq.Status!=RFQ_INITIATED {
+	// 	return shim.Error(fmt.Sprintf("chaincode:ProvideQuote::rfq not available anymore for quotes"))
+	// }
 
 	quote := Quote{}
 	quoteHash := sha256.Sum256([]byte(cert.Subject.CommonName + rfqId))
