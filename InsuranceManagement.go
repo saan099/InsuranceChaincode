@@ -129,17 +129,17 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.MarkPaymentAndGeneratePolicy(stub, args)
 	} else if function == "readAllInsurers" {
 		return t.ReadAllInsurers(stub, args)
-	}else if function == "readAllQuote" {
+	} else if function == "readAllQuote" {
 		return t.ReadAllQuote(stub, args)
-	}else if function == "readQuoteByRange" {
+	} else if function == "readQuoteByRange" {
 		return t.ReadQuoteByRange(stub, args)
-	}else if function == "readSingleQuote" {
+	} else if function == "readSingleQuote" {
 		return t.ReadSingleQuote(stub, args)
-	}else if function == "readAllPolicy" {
+	} else if function == "readAllPolicy" {
 		return t.ReadAllPolicy(stub, args)
-	}else if function == "readSinglePolicy" {
+	} else if function == "readSinglePolicy" {
 		return t.ReadSinglePolicy(stub, args)
-	}else if function == "readPolicyByRange" {
+	} else if function == "readPolicyByRange" {
 		return t.ReadPolicyByRange(stub, args)
 	}
 
@@ -177,45 +177,45 @@ func (t *InsuranceManagement) ReadAcc(stub shim.ChaincodeStubInterface, args []s
 
 }
 
-func (t *InsuranceManagement) ReadAllInsurers(stub shim.ChaincdoeStubInterface, args []string) pb.Response {
+func (t *InsuranceManagement) ReadAllInsurers(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 0 {
 		return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::Expected no arguments"))
 	}
 
-	insurerList:=[]string
-	insurerListAsbytes,err:=stub.GetState(INSURERS_LIST)
-	if err!=nil {
+	var insurerList []string
+	insurerListAsbytes, err := stub.GetState(INSURERS_LIST)
+	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::couldnt get state of insurerList"))
 	}
-	err=json.Unmarshal(insurerListAsbytes, &insurerList)
-	if err!=nil {
+	err = json.Unmarshal(insurerListAsbytes, &insurerList)
+	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::Insurer list not unmarshalled"))
 	}
 	type insurerNameAddress struct {
-		Name string `json:"name"`
+		Name    string `json:"name"`
 		Address string `json:"address"`
 	}
 
 	var outputInsurers []insurerNameAddress
 
-	for i:=range insurerList {
-		insurer:=Insurer{}
-		insurerasbytes,err:=stub.GetState(insurerList[i])
-		if err!=nil {
+	for i := range insurerList {
+		insurer := Insurer{}
+		insurerasbytes, err := stub.GetState(insurerList[i])
+		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::Something is wrong, insurer is missing"))
 		}
-		err=json.Unmarshal(insurerasbytes, &insurer)
-		if err!-nil {
+		err = json.Unmarshal(insurerasbytes, &insurer)
+		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::insurer couldnt get unmarshalled"))
 		}
-		outputInsurer:=insurerNameAddress{}
-		outputInsurer.Address=insurer.InsurerId
-		outputInsurer.Name=insurer.InsurerName
-		outputInsurers=append(outputInsurers, outputInsurer)
+		outputInsurer := insurerNameAddress{}
+		outputInsurer.Address = insurer.InsurerId
+		outputInsurer.Name = insurer.InsurerName
+		outputInsurers = append(outputInsurers, outputInsurer)
 	}
 
-	newOutputInsurersAsbytes,err:=json.Marshal(outputInsurers)
-	if err!=nil {
+	newOutputInsurersAsbytes, err := json.Marshal(outputInsurers)
+	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:ReadAllInsurers::couldnt marshal output of insurers list"))
 	}
 
