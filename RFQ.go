@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -72,8 +71,6 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByClient:: couldnt unmarshal client"))
 	}
-	tym := time.Now()
-	tym.Format("Mon Jan _2 15:04:05 2006")
 	rfq := RFQ{}
 	rfq.ClientId = clientAddress
 	rfq.RFQId = rfqId
@@ -83,7 +80,7 @@ func (t *InsuranceManagement) GenerateRFQByClient(stub shim.ChaincodeStubInterfa
 	rfq.InsuredName = InsurerClient
 	rfq.StartDate = startDate
 	rfq.EndDate = endDate
-	rfq.Status = "RFQ fired on " + tym.String()
+	rfq.Status = RFQ_INITIALIZED
 	rfq.Intermediary = INTERMEDIARY_CLIENT
 
 	transactionRecord := TransactionRecord{}
@@ -233,9 +230,6 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt unmarshal client "))
 	}
-
-	tym := time.Now()
-	tym.Format("Mon Jan _2 15:04:05 2006")
 	rfq := RFQ{}
 	rfq.ClientId = brokerAddress
 	rfq.RFQId = rfqId
@@ -245,7 +239,7 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	rfq.InsuredName = InsurerClient
 	rfq.StartDate = startDate
 	rfq.EndDate = endDate
-	rfq.Status = "RFQ fired on " + tym.String()
+	rfq.Status = RFQ_INITIALIZED
 	rfq.Intermediary = INTERMEDIARY_BROKER
 
 	transactionRecord := TransactionRecord{}
