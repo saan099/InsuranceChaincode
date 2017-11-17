@@ -60,21 +60,43 @@ func (t *InsuranceManagement) ReadAllRFQ(stub shim.ChaincodeStubInterface, args 
 		}
 
 		
-		var buffer bytes.Buffer
-		buffer.WriteString("[")
+		var bigbuffer bytes.Buffer
+		bigbuffer.WriteString("[")
 		flag:=false
+		rfqObj:= RFQ{}
+		readsObj:= Reads{}
+		insurerObj:=Insurer{}
 		for i:=0 ; i < len(rfqId); i++ {
+			var buffer bytes.Buffer
 			if flag == true {
-				buffer.WriteString(",")
+				bigbuffer.WriteString(",")
 			}
 			rfqAsBytes,_ := stub.GetState(rfqId[i])
+			err= json.Unmarshal(rfqAsBytes,&rfqObj)
 			buffer.WriteString(string(rfqAsBytes))
+
+			for j:=0 ; j < len(rfqObj.SelectedInsurer); j++ {
+				insurerAsBytes,_:= stub.GetState(rfqObj.SelectedInsurer[j])  
+				err = json.Unmarshal(insurerAsBytes,&insurerObj)
+				readsObj.Id = insurerObj.InsurerId
+				readsObj.Name = insurerObj.InsurerName
+				readsAsBytes,_ := json.Marshal(readsObj)
+				str:= "\""+rfqObj.SelectedInsurer[j] + "\""
+				var a string
+				if rfqObj.LeadInsurer == rfqObj.SelectedInsurer[j]{
+				a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),2)) 
+				}else{
+					a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),1))
+				}
+				buffer.Reset()
+				buffer.WriteString(a)
+			}		
 			flag = true
-			//err = json.Unmarshal(rfqAsBytes,&rfqArr[i])		
+			bigbuffer.WriteString(buffer.String())
 		}
-		buffer.WriteString("]")
+		bigbuffer.WriteString("]")
 		
-		return shim.Success(buffer.Bytes())
+		return shim.Success(bigbuffer.Bytes())
 
 	}
 
@@ -131,13 +153,53 @@ func (t *InsuranceManagement) ReadAllRFQ(stub shim.ChaincodeStubInterface, args 
 		}
 
 		if flag == 0 { return shim.Error("chaincode:readSingleRFQ:: RFQId Not found in account")}
-
+		var buffer bytes.Buffer
+		//buffer.WriteString("[")
 		rfqAsBytes,err:=stub.GetState(args[0])
 		if err != nil {
 			return shim.Error("chaincode:readSingleRFQ:: RFQId Not found in WorldState")
 		}
+		rfqObj:= RFQ{}
+		readsObj:= Reads{}
+		insurerObj:=Insurer{}
+		buffer.WriteString(string(rfqAsBytes))
+		err= json.Unmarshal(rfqAsBytes,&rfqObj)
+		for j:=0 ; j < len(rfqObj.SelectedInsurer); j++ {
+				insurerAsBytes,_:= stub.GetState(rfqObj.SelectedInsurer[j])  
+				err = json.Unmarshal(insurerAsBytes,&insurerObj)
+				readsObj.Id = insurerObj.InsurerId
+				readsObj.Name = insurerObj.InsurerName
+				readsAsBytes,_ := json.Marshal(readsObj)
+				str:= "\""+rfqObj.SelectedInsurer[j] + "\""
+				var a string
+				if rfqObj.LeadInsurer == rfqObj.SelectedInsurer[j]{
+				a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),2)) 
+				}else{
+					a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),1))
+				}
+				buffer.Reset()
+				buffer.WriteString(a)
+			}
+			for j:=0 ; j < len(rfqObj.Quotes); j++ {
+				quotesAsBytes,_:= stub.GetState(rfqObj.Quotes[j])  
+				//err = json.Unmarshal(insurerAsBytes,&insurerObj)
+				
+				//readsAsBytes,_ := json.Marshal(readsObj)
+				str:= "\""+rfqObj.Quotes[j] + "\""
+				var a string
+				//if rfqObj.LeadInsurer == rfqObj.Quotes[j]{
+				a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(quotesAsBytes),1)) 
+				//}else{
+				//	a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(quotesAsBytes),1))
+				//}
+				buffer.Reset()
+				buffer.WriteString(a)
+			}		
+			//flag = true
+			//bigbuffer.WriteString(buffer.String())
+		
 
-		return shim.Success(rfqAsBytes)	
+		return shim.Success(buffer.Bytes())	
 	}
 
 //================================= ReadRFQByRange ===================================================================
@@ -196,32 +258,53 @@ func (t *InsuranceManagement) ReadRFQByRange(stub shim.ChaincodeStubInterface,ar
 			return shim.Error("cannot convert start string to int")
 		}
 		
-		if end > len(rfqId) {
+		if end >= len(rfqId) {
 			//return shim.Error("chaincode:readRFQByRange::End range exceeded")
-			end = len(rfqId)
+			end = len(rfqId)-1
 		}
 
 		if start > len(rfqId) {
 			start =0 
 			end =0
 		}
-		var buffer bytes.Buffer
-		buffer.WriteString("[")
+		var bigbuffer bytes.Buffer
+		bigbuffer.WriteString("[")
 		flag:=false
+		rfqObj:= RFQ{}
+		readsObj:= Reads{}
+		insurerObj:=Insurer{}
 
-		for i:=start; i < end ; i++ {
+		for i:=end; i >=start ; i-- {
+			var buffer bytes.Buffer
 			if flag == true {
-				buffer.WriteString(",")
+				bigbuffer.WriteString(",")
 			}
-			rfqAsBytes,err := stub.GetState(rfqId[i])
-			if err!=nil { 
-				return shim.Error(fmt.Sprintf("chaincode:readRFQByRange::Could not get state of %s",rfqId[i]))}
+			rfqAsBytes,_ := stub.GetState(rfqId[i])
+			err= json.Unmarshal(rfqAsBytes,&rfqObj)
 			buffer.WriteString(string(rfqAsBytes))
+
+			for j:=0 ; j < len(rfqObj.SelectedInsurer); j++ {
+				insurerAsBytes,_:= stub.GetState(rfqObj.SelectedInsurer[j])  
+				err = json.Unmarshal(insurerAsBytes,&insurerObj)
+				readsObj.Id = insurerObj.InsurerId
+				readsObj.Name = insurerObj.InsurerName
+				readsAsBytes,_ := json.Marshal(readsObj)
+				str:= "\""+rfqObj.SelectedInsurer[j] + "\""
+				var a string
+				if rfqObj.LeadInsurer == rfqObj.SelectedInsurer[j]{
+				a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),2)) 
+				}else{
+					a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(readsAsBytes),1))
+				}
+				buffer.Reset()
+				buffer.WriteString(a)
+			}		
 			flag = true
+			bigbuffer.WriteString(buffer.String())
 		}
-		buffer.WriteString("]")
+		bigbuffer.WriteString("]")
 		
-		return shim.Success(buffer.Bytes())
+		return shim.Success(bigbuffer.Bytes())
 	}
 
 //================================= ReadClientOfBroker ==================================================================

@@ -19,7 +19,7 @@ type Insurer struct {
 
 type RFQ struct {
 	RFQId              string              `json:"rfqId"`
-	ClientId           string              `json:"insurerId"`
+	ClientId           string              `json:"clientId"`
 	InsuredName        string              `json:"insuredName"`
 	TypeOfInsurance    string              `json:"typeOfInsurance"`
 	RiskAmount         float64             `json:"riskAmount"`
@@ -78,4 +78,21 @@ type Quote struct {
 	RFQId              string              `json:"rfqId"`
 	Status             string              `json:"status"`
 	TransactionHistory []TransactionRecord `json:"transactionHistory"`
+}
+
+type Claim struct {
+	ClaimId 			string				
+	ClaimType 			string 
+	ClientId			string
+	IntimationDate 		string
+	LossDate 			string
+	PolicyNumber 		string
+	InsuredName 		string	
+	LossDescription 	string
+	ClaimAmount 		string
+}
+
+type Reads struct {
+	Id string `json:"insurerId"`
+	Name string `json:"insurerName"`
 }
