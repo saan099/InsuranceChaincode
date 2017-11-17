@@ -61,6 +61,26 @@ func (t *InsuranceManagement) InitInsurer(stub shim.ChaincodeStubInterface, args
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::couldn't write state "))
 	}
+	insurerList:=[]string
+	insurerListAsbytes,err:=stub.GetState(INSURERS_LIST)
+	if err!=nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::couldnt get state of insurerList"))
+	}
+	err=json.Unmarshal(insurerListAsbytes, &insurerList)
+	if err!=nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::Insurer list not unmarshalled"))
+	}
+	insurerList=append(insurerList, insurerAddress)
+	newInsurerListAsbytes,err:=json.Marshal(insurerList)
+	if err!=nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::Insurer list not unmarshalled"))
+	}
+	err=stub.PutState(INSURERS_LIST,newInsurerListAsbytes)
+	if err!=nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitInsurer::Insurer list not put state"))
+	}
+
+
 	return shim.Success(nil)
 
 }
