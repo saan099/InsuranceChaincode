@@ -128,7 +128,13 @@ func (t *InsuranceManagement) ReadPolicyByRange(stub shim.ChaincodeStubInterface
 				return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::Could not convert %s to int",args[1]))
 			}
 		if end > len(policyArr) {
-			return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::End limit exceeded"))
+			//return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::End limit exceeded"))
+			end=len(policyArr)
+		}
+
+		if start > len(policyArr) {
+			start =0 
+			end =0
 		}
 
 		var buffer bytes.Buffer
@@ -185,10 +191,12 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 
 		err = json.Unmarshal(invokerAsBytes,&invokerClient)
 		if err!=nil {
-			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Error Unmarshalling %s",err.Error()))
+			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Error Unmarshalling "))
 		}
 
-		policyArr:= invokerClient.Policies
+		var policyArr []string
+		
+		policyArr = invokerClient.Policies
 
 		/*if len(proposalArr) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:readAllProposal:: No proposals found in acount"))
@@ -206,7 +214,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 		}
 
 		if flag == false {
-			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy:: Policy %s not found in account",err.Error())) 
+			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy:: Policy not found in account")) 
 		}
 
 			policyAsBytes,err := stub.GetState(args[0])

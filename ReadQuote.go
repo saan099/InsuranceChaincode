@@ -128,7 +128,13 @@ func (t *InsuranceManagement) ReadQuoteByRange(stub shim.ChaincodeStubInterface,
 				return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::Could not convert %s to int",args[1]))
 			}
 		if end > len(quoteArr) {
-			return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::End limit exceeded"))
+			//return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::End limit exceeded"))
+			end= len(quoteArr)
+		}
+
+		if start > len(quoteArr) {
+			start =0 
+			end =0
 		}
 
 		var buffer bytes.Buffer
@@ -188,7 +194,8 @@ func (t *InsuranceManagement) ReadSingleQuote(stub shim.ChaincodeStubInterface, 
 			return shim.Error(fmt.Sprintf("chaincode:readSingleQuote::Error Unmarshalling %s",err.Error()))
 		}
 
-		quoteArr:= invokerInsurer.Quotes
+		var quoteArr []string
+		quoteArr = invokerInsurer.Quotes
 
 		/*if len(proposalArr) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:readAllProposal:: No proposals found in acount"))
@@ -206,7 +213,7 @@ func (t *InsuranceManagement) ReadSingleQuote(stub shim.ChaincodeStubInterface, 
 		}
 
 		if flag == 0 {
-			return shim.Error(fmt.Sprintf("chaincode:readSingleQuote:: Quote %s not found in account",err.Error())) 
+			return shim.Error(fmt.Sprintf("chaincode:readSingleQuote:: Quote not found in account")) 
 		}
 
 			quoteAsBytes,err := stub.GetState(args[0])

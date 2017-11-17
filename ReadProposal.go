@@ -214,7 +214,13 @@ func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterfa
 			}
 
 		if end > len(proposalArr) {
-			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
+			//return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
+			end=len(proposalArr)
+		}
+
+		if start > len(proposalArr) {
+			start =0 
+			end =0
 		}
 
 		
