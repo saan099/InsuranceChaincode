@@ -197,7 +197,13 @@ func (t *InsuranceManagement) ReadRFQByRange(stub shim.ChaincodeStubInterface,ar
 		}
 		
 		if end > len(rfqId) {
-			return shim.Error("chaincode:readRFQByRange::End range exceeded")
+			//return shim.Error("chaincode:readRFQByRange::End range exceeded")
+			end = len(rfqId)
+		}
+
+		if start > len(rfqId) {
+			start =0 
+			end =0
 		}
 		var buffer bytes.Buffer
 		buffer.WriteString("[")
