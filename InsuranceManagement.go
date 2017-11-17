@@ -19,6 +19,7 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
+const RFQ_INITIALIZED string = "Pending"
 const LEAD_ASSIGNED string = "Lead Assigned"
 const RFQ_QUOTES_FINALIZED string = "RFQ Quotes finalized"
 const RFQ_PROPOSAL_FINALIZED string = "RFQ Proposal Finalized"
