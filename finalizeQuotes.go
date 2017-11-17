@@ -14,9 +14,16 @@ import (
 	mspprotos "github.com/hyperledger/fabric/protos/msp"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
-
+//============================= Finalize Quotes By Client ============================================================
 func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
+	//args[0]=rfqId
+	//args[1]=numOfQuotes
+	//args[2]=quoteId
+	//args[3]=capacity
+	//...
+	//args[i]= quoteId
+	//args[i+1]=capacity
+	
 	rfqId := args[0]
 	numOfQuotes, err := strconv.Atoi(args[1])
 	if err != nil {
@@ -196,6 +203,9 @@ func (t *InsuranceManagement) FinalizeQuotesByClient(stub shim.ChaincodeStubInte
 
 	return shim.Success(nil)
 }
+
+
+//================================ Finalize Quotes By Broker =================================================================
 
 func (t *InsuranceManagement) FinalizeQuotesByBroker(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
