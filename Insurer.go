@@ -147,8 +147,7 @@ func (t *InsuranceManagement) ProvideQuote(stub shim.ChaincodeStubInterface, arg
 	// }
 
 	quote := Quote{}
-	quoteHash := sha256.Sum256([]byte(cert.Subject.CommonName + rfqId))
-	quoteAddress := hex.EncodeToString(quoteHash[:])
+	quoteAddress := stub.GetTxID()
 
 	quote.QuoteId = quoteAddress
 	quote.InsurerName = insurer.InsurerName
