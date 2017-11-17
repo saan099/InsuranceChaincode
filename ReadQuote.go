@@ -211,20 +211,31 @@ func (t *InsuranceManagement) ReadSingleQuote(stub shim.ChaincodeStubInterface, 
 				//break
 			}
 		}
-
+		var buffer bytes.Buffer
 		if flag == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:readSingleQuote:: Quote not found in account")) 
 		}
-
+			quoteObj:=Quote{}
 			quoteAsBytes,err := stub.GetState(args[0])
 			if err!=nil {
 				return shim.Error(fmt.Sprintf("chaincode:readSingleQuote::Could not get state of %s",args[0]))
 			}
+			buffer.WriteString(string(quoteAsBytes))
+			err = json.Unmarshal(quoteAsBytes,&quoteObj)
+			rfqAsBytes,err :=stub.GetState(quoteObj.RFQId)
+			str:= "\""+quoteObj.RFQId + "\""
+				var a string
+				//if rfqObj.LeadInsurer == rfqObj.SelectedInsurer[j]{
+				a=string(bytes.Replace(buffer.Bytes(),[]byte(str),[]byte(rfqAsBytes),1)) 
+				buffer.Reset()
+				buffer.WriteString(a)
+			//quoteObj.RFQId = string(rfqAsBytes)
+			//quoteAsBytes,err = json.Marshal(quoteObj)
 			//buffer.WriteString(string(quoteAsBytes))
 			
 			//flag = true
 		
 		//buffer.WriteString("]")
 
-		return shim.Success(quoteAsBytes)
+		return shim.Success(buffer.Bytes())
 }
