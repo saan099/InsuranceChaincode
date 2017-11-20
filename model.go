@@ -3,6 +3,7 @@ package main
 type Client struct {
 	ClientId      string   `json:"clientId"`
 	ClientName    string   `json:"clientName"`
+	UserName      string   `json:"userName"`
 	Policies      []string `json:"policies"`
 	RFQArray      []string `json:"rfqArray"`
 	ProposalArray []string `json:"proposalArray"`
@@ -12,6 +13,7 @@ type Client struct {
 type Insurer struct {
 	InsurerId     string   `json:"insurerId"`
 	InsurerName   string   `json:"insurerName"`
+	UserName      string   `json:"userName"`
 	RFQArray      []string `json:"rfqArray"`
 	Quotes        []string `json:"quotes"`
 	Policies      []string `json:"policies"`
@@ -66,6 +68,7 @@ type Policy struct {
 type Broker struct {
 	BrokerId      string   `json:"brokerId"`
 	BrokerName    string   `json:"brokerName"`
+	UserName      string   `json:"userName"`
 	Clients       []string `json:"clients"`
 	RFQArray      []string `json:"rfqArray"`
 	Policies      []string `json:"policies"`
@@ -108,6 +111,7 @@ type Reads struct {
 type Surveyor struct {
 	SurveyorId          string   `json:"surveyorId"`
 	SurveyorName        string   `json:"surveyorName"`
+	UserName            string   `json:"userName"`
 	PendingInspection   []string `json:"pendingInspection"`
 	CompletedInspection []string `json:"completedInspection"`
 	//Claims		  		[]string 			`json:"claims"`

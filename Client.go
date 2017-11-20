@@ -17,6 +17,12 @@ import (
 //=========================================================InitClient=================================================
 
 func (t *InsuranceManagement) InitClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) == 1 {
+		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments"))
+	}
+	clientName := args[0]
+
 	fmt.Println("init client called")
 	fmt.Println("=========================================")
 	creator, err := stub.GetCreator()
@@ -49,7 +55,8 @@ func (t *InsuranceManagement) InitClient(stub shim.ChaincodeStubInterface, args 
 
 	client := Client{}
 	client.ClientId = clientAddress
-	client.ClientName = cert.Subject.CommonName
+	client.ClientName = clientName
+	client.UserName = cert.Subject.CommonName
 
 	clientAsBytes, err := json.Marshal(client)
 	if err != nil {
