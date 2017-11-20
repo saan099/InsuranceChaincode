@@ -229,7 +229,8 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		if claim.Status != CLAIM_INSPECTION_COMPLETED {
 			return shim.Error("chaincode:UploadClaimReport:Inspection report is not done yet")
 		}
-		claim.ApprovedAmount = strconv.ParseFloat(args[1],64)
+		claim.ApprovedAmount,err = strconv.ParseFloat(args[1],64)
+
 		claimAsBytes ,err = json.Marshal(claim)
 
 		err = stub.PutState(claim.ClaimId,claimAsBytes)
@@ -297,14 +298,14 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		}
 
 		//add report to completed
-		claim.Report = args[1] 
-		claim.CompletedInspection = append(claim.CompletedInspection,args[0])
+		claim.Report = args[1] 		
 		claim.Status = CLAIM_INSPECTION_COMPLETED
 
+		surveyor.CompletedInspection = append(surveyor.CompletedInspection,args[0])
 		//remove claim from pending
 		surveyor.PendingInspection = append(surveyor.PendingInspection[i:],surveyor.PendingInspection[:i+1]...)
 		
-		claimAsBytes, err = json.Marhsal(claim)
+		claimAsBytes, err = json.Marshal(claim)
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt unmarsahl claim2"))
 		}
@@ -312,7 +313,7 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt putstate claim"))
 		}
-		surveyorAsBytes, err = json.Marshal(surveyor)
+		surveyorAsBytes, err := json.Marshal(surveyor)
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt unmarshal surveyor2"))
 		}
