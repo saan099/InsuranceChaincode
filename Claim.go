@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"bytes"
-	"strconv"
+	//"bytes"
+	//"strconv"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	mspprotos "github.com/hyperledger/fabric/protos/msp"
@@ -53,7 +53,7 @@ func (t *InsuranceManagement) GenerateClaim(stub shim.ChaincodeStubInterface, ar
 		flag:=false
 		
 		for i:=0 ; i < len(client.Policies); i++ {
-			if args[3] == client.Policies {
+			if args[3] == client.Policies[i] {
 				flag = true 
 				break
 			}
@@ -87,22 +87,28 @@ func (t *InsuranceManagement) GenerateClaim(stub shim.ChaincodeStubInterface, ar
 		//update every insurer with new generated claim
 		for i:=0 ; i < len(policy.Details.SelectedInsurer) ; i++ {
 			insurerAsBytes,err:= stub.GetState(policy.Details.SelectedInsurer[i])
+			if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim:couldnt get Insurers"))
+		}
 			err = json.Unmarshal(insurerAsBytes,&insurer)
+			if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim:couldnt UNmarshal insurer"))
+		}
 			insurer.Claims = append(insurer.Claims,claim.ClaimId)
 			insurerAsBytes,err = json.Marshal(insurer)
-				err=stub.PutState(insurer.InsurerId,)
+				err=stub.PutState(insurer.InsurerId,insurerAsBytes)
 		}
-		insurerAsBytese,err:=stub.GetState(policy.Details.LeadInsurer)
+		insurerAsBytes,err:=stub.GetState(policy.Details.LeadInsurer)
 		err = json.Unmarshal(insurerAsBytes,&insurer)
 		insurer.Claims = append(insurer.Claims, claim.ClaimId)
 
-		claimAsBytes,err= json.Marshal(claim)
+		claimAsBytes,err:= json.Marshal(claim)
 		err = stub.PutState(claim.ClaimId,claimAsBytes)
 		
-		clientAsBytes,err = json.Marshal(client)
+		clientAsBytes,err := json.Marshal(client)
 		err = stub.PutState(client.ClientId,clientAsBytes)
 
-		return shim.Success()
+		return shim.Success(nil)
 	}
 
 
@@ -136,7 +142,7 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::account doesnt exists"))	
 		}
 		claim:=Claim{}
-		claimAsBytes,err = stub.GetState(args[0])
+		claimAsBytes,err := stub.GetState(args[0])
 		if err != nil || len(claimAsBytes) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::Claim Id doesnt exist"))	
 		}
@@ -152,9 +158,10 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 
 		//assign surveyor
 		claim.Surveyor = args[1]
-		claim.Status = CLAIM_SURVEYOR_ASSIGNED		
+		claim.Status = CLAIM_SURVEYOR_ASSIGNED	
+		claimAsBytes,err = json.Marshal(claim)	
 
-		err = stub.PutState(claim.ClaimId,claim) // update state of claim
+		err = stub.PutState(claim.ClaimId,claimAsBytes) // update state of claim
 
-		return shim.Success()	
+		return shim.Success(nil)	
 	}
