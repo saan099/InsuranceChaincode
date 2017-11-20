@@ -244,8 +244,8 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		//args[0]= Claim Id
 		//args[1]= Claim report hash
 			
-		if len(args) != 0 {
-			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport: arguments expected"))
+		if len(args) != 2 {
+			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport: 2 arguments expected"))
 		}
 	
 		creator, err := stub.GetCreator() // it'll give the certificate of the invoker

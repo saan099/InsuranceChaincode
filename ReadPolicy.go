@@ -216,16 +216,83 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 		if flag == false {
 			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy:: Policy not found in account")) 
 		}
-
+		type readRFQ struct {
+		RFQId              string              `json:"rfqId"`
+		ClientId           string              `json:"clientId"`
+		InsuredName        string              `json:"insuredName"`
+		TypeOfInsurance    string              `json:"typeOfInsurance"`
+		RiskAmount         float64             `json:"riskAmount"`
+		RiskLocation       string              `json:"riskLocation"`
+		StartDate          string              `json:"startDate"`
+		EndDate            string              `json:"endDate"`
+		Status             string              `json:"status"`
+		Quotes             []Quote             `json:"quotes"`
+		LeadQuote          Quote               `json:"leadQuote"`
+		SelectedInsurer    []Reads             `json:"selectedInsurer"`
+		LeadInsurer        Reads               `json:"leadInsurer"`
+		ProposalDocHash    string              `json:"proposalDocHash"`
+		ProposalNum        string              `json:"proposalNum"`
+		Intermediary       string              `json:"intermediary"`
+		TransactionHistory []TransactionRecord `json:"transactionHistory"`
+	}
+		
+		type readPolicy struct {
+			PolicyNumber       string              `json:"policyNumber"`
+			ProposalNum        string              `json:"proposalNum"`
+			PolicyDocHash      string              `json:"policyDocHash"`
+			Details            readRFQ                 `json:"details"`
+			Status             string              `json:"status"`
+			TransactionHistory []TransactionRecord `json:"transactionHistory"`
+			}
+		
+		//var arr []byte
+		//var quoteArr []Quote
+		policy:= Policy{}
 			policyAsBytes,err := stub.GetState(args[0])
 			if err!=nil {
 				return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Could not get state of %s",args[0]))
 			}
+			err = json.Unmarshal(policyAsBytes,&policy)
+			readpolicy:= readPolicy{}
+			readrfq:= readRFQ{}
+			rfq:= policy.Details
+			readpolicy.PolicyDocHash = policy.PolicyDocHash
+			readpolicy.PolicyNumber = policy.PolicyNumber
+			readpolicy.ProposalNum = policy.ProposalNum
+			readpolicy.Status = policy.Status
+			readpolicy.TransactionHistory = policy.TransactionHistory
+
+
+			readrfq.ClientId = rfq.ClientId
+			readrfq.InsuredName = rfq.InsuredName
+			readrfq.EndDate = rfq.EndDate
+			readrfq.Intermediary = rfq.Intermediary
+			readrfq.ProposalDocHash = rfq.ProposalDocHash
+			readrfq.ProposalNum = rfq.ProposalNum
+			readrfq.RFQId = rfq.RFQId
+			readrfq.RiskAmount = rfq.RiskAmount
+			readrfq.RiskLocation = rfq.RiskLocation
+			readrfq.StartDate = rfq.StartDate
+			readrfq.Status = rfq.Status
+			readrfq.TransactionHistory = rfq.TransactionHistory
+			readrfq.TypeOfInsurance = rfq.TypeOfInsurance
+			
+			var quote Quote
+			for i:= range rfq.Quotes {
+				quoteAsBytes,err := stub.GetState(rfq.Quotes[i])
+				if err!=nil {
+				return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Could not get state of %s",rfq.Quotes[i]))
+			}
+				err = json.Unmarshal(quoteAsBytes,&quote)
+				readrfq.Quotes = append(readrfq.Quotes,quote)
+			}
+			readpolicy.Details = readrfq
+			policyAsBytes,err = json.Marshal(readpolicy)
 			//buffer.WriteString(string(quoteAsBytes))
 			
 			//flag = true
 		
-		//buffer.WriteString("]")
+			//buffer.WriteString("]")
 
 		return shim.Success(policyAsBytes)
 }
