@@ -95,6 +95,7 @@ type Claim struct {
 	ClaimAmount 		string				`json:"claimAmount"`	
 	Status 				string				`json:"status"`
 	Surveyor			string 				`json:"surveyor"`
+	Report				string 				`json:"report"`
 }
 
 type Reads struct {
@@ -107,5 +108,5 @@ type Surveyor struct {
 	SurveyorName		  string			`json:"surveyorName"`
 	PendingInspection   []string			`json:"pendingInspection"`	
 	CompletedInspection []string			`json:"completedInspection"`
-	Claims		  		[]string 			`json:"claims"`
+	//Claims		  		[]string 			`json:"claims"`
 }

@@ -127,9 +127,9 @@ func (t *InsuranceManagement) ReadPolicyByRange(stub shim.ChaincodeStubInterface
 		if err!=nil {
 				return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::Could not convert %s to int",args[1]))
 			}
-		if end > len(policyArr) {
+		if end >= len(policyArr) {
 			//return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::End limit exceeded"))
-			end=len(policyArr)
+			end=len(policyArr)-1
 		}
 
 		if start > len(policyArr) {
@@ -141,7 +141,7 @@ func (t *InsuranceManagement) ReadPolicyByRange(stub shim.ChaincodeStubInterface
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=start; i < end ; i++ {
+		for i:=end; i >= start ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}

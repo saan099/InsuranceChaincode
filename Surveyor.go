@@ -53,7 +53,7 @@ func (t *InsuranceManagement) InitSurveyor(stub shim.ChaincodeStubInterface, arg
 	surveyor.SurveyorId = invokerAddress
 	surveyor.SurveyorName = cert.Subject.CommonName
 
-	invokerAsBytes, err := json.Marshal(surveyor)
+	invokerAsBytes, err = json.Marshal(surveyor)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::couldn't Unmarsh creator"))
 	}

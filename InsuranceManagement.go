@@ -41,6 +41,7 @@ const INTERMEDIARY_BROKER string = "Intermediary Broker"
 const INSURERS_LIST string = "Insurers List"
 const CLAIM_INITIALIZED string = "Claim Initialized"
 const CLAIM_SURVEYOR_ASSIGNED string = "Claim Surveyor Assigned"
+const CLAIM_INSPECTION_COMPLETED string = "Claim Inspection Completed"
 
 type InsuranceManagement struct {
 }

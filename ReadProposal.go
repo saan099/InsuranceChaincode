@@ -213,9 +213,9 @@ func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterfa
 				return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not conver %s to int",args[1]))
 			}
 
-		if end > len(proposalArr) {
+		if end >= len(proposalArr) {
 			//return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
-			end=len(proposalArr)
+			end=len(proposalArr)-1
 		}
 
 		if start > len(proposalArr) {
@@ -230,7 +230,7 @@ func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterfa
 		flag:=false
 		proposalobj:=Proposal{}
 		
-		for i:=start;i < end;i++ {
+		for i:=end;i >= start; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}			
