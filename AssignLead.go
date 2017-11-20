@@ -103,6 +103,7 @@ func (t *InsuranceManagement) SelectLeadInsurerByClient(stub shim.ChaincodeStubI
 	rfq.LeadQuote = quote.QuoteId
 	rfq.LeadInsurer = quote.InsurerId
 	rfq.Status = LEAD_ASSIGNED
+	rfq.Premium = quote.Premium
 	transactionRecord := TransactionRecord{}
 	transactionRecord.TxId = stub.GetTxID()
 	timestamp, err := stub.GetTxTimestamp()

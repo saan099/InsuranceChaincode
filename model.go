@@ -24,6 +24,7 @@ type RFQ struct {
 	TypeOfInsurance    string              `json:"typeOfInsurance"`
 	RiskAmount         float64             `json:"riskAmount"`
 	RiskLocation       string              `json:"riskLocation"`
+	Premium            float64             `json:"premium"`
 	StartDate          string              `json:"startDate"`
 	EndDate            string              `json:"endDate"`
 	Status             string              `json:"status"`
@@ -81,18 +82,18 @@ type Quote struct {
 }
 
 type Claim struct {
-	ClaimId 			string				
-	ClaimType 			string 
-	ClientId			string
-	IntimationDate 		string
-	LossDate 			string
-	PolicyNumber 		string
-	InsuredName 		string	
-	LossDescription 	string
-	ClaimAmount 		string
+	ClaimId         string
+	ClaimType       string
+	ClientId        string
+	IntimationDate  string
+	LossDate        string
+	PolicyNumber    string
+	InsuredName     string
+	LossDescription string
+	ClaimAmount     string
 }
 
 type Reads struct {
-	Id string `json:"insurerId"`
+	Id   string `json:"insurerId"`
 	Name string `json:"insurerName"`
 }
