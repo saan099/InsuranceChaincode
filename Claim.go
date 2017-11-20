@@ -17,7 +17,7 @@ import (
 
 
 //=================================== Generate Claim ================================================================
-func (t *InsuranceManagement) GenerateClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	
 		//args[0]= Intimation Date
 		//args[1]= Loss Date
@@ -52,6 +52,7 @@ func (t *InsuranceManagement) GenerateClaim(stub shim.ChaincodeStubInterface, ar
 		client:= Client{}
 		flag:=false
 		
+		err = json.Unmarshal(invokerAsBytes,&client)
 		for i:=0 ; i < len(client.Policies); i++ {
 			if args[3] == client.Policies[i] {
 				flag = true 
@@ -63,7 +64,7 @@ func (t *InsuranceManagement) GenerateClaim(stub shim.ChaincodeStubInterface, ar
 			return shim.Error("chaincode:generateClaim::Policy number doesnt exist in account")
 		}
 
-		err = json.Unmarshal(invokerAsBytes,&client)
+		//err = json.Unmarshal(invokerAsBytes,&client)
 
 		claim:=Claim{}
 		// add claim details
@@ -146,8 +147,10 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		if err != nil || len(claimAsBytes) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::Claim Id doesnt exist"))	
 		}
-		err=json.Unmarshal(claimAsBytes,claim)
-
+		err=json.Unmarshal(claimAsBytes,&claim)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:couldnt unmarshal claim"))
+		}
 		//check if the invoker is Lead Insurer
 		policyAsBytes,err:=stub.GetState(claim.PolicyNumber)
 		policy:=Policy{}
@@ -155,6 +158,14 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		if policy.Details.LeadInsurer != invokerAddress {
 			return shim.Error("chaincode:asignSurveyorToClaim::Only Lead insurer is allowed to assign surveyor")
 		}
+		//check if Surveyor exists
+		surveyorAsBytes,err:= stub.GetState(args[1])
+		if err != nil || len(surveyorAsBytes) == 0 {
+			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::Surveyor doesnt exist"))	
+		}
+		surveyor:= Surveyor{}
+		err = json.Unmarshal(surveyorAsBytes,&surveyor)
+		surveyor.Claims = append(surveyor.Claims,claim..ClaimId)
 
 		//assign surveyor
 		claim.Surveyor = args[1]

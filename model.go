@@ -104,6 +104,7 @@ type Reads struct {
 
 type Surveyor struct {
 	SurveyorId 			  string			`json:"surveyorId"`
+	SurveyorName		  string			`json:"surveyorName"`
 	PendingInspection   []string			`json:"pendingInspection"`	
 	CompletedInspection []string			`json:"completedInspection"`
 	Claims		  		[]string 			`json:"claims"`
