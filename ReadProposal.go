@@ -131,6 +131,7 @@ func (t *InsuranceManagement) ReadSingleProposal(stub shim.ChaincodeStubInterfac
 		if proposalArr[i] == args[0] {
 			flag = 1
 			break
+		}
 	}
 	if flag == 0 {
 		return shim.Error("chaincode:readSingleProposal:: Proposal Not found in account")
@@ -334,92 +335,91 @@ func (t *InsuranceManagement) ReadSingleProposal(stub shim.ChaincodeStubInterfac
 
 func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-        if len(args) != 2 {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:2 arguments expected"))
-        }
+	if len(args) != 2 {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:2 arguments expected"))
+	}
 
-        creator, err := stub.GetCreator() // it'll give the certificate of the invoker
-        id := &mspprotos.SerializedIdentity{}
-        err = proto.Unmarshal(creator, id)
+	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
+	id := &mspprotos.SerializedIdentity{}
+	err = proto.Unmarshal(creator, id)
 
-        if err != nil {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:couldnt unmarshal creator"))
-        }
-        block, _ := pem.Decode(id.GetIdBytes())
-        cert, err := x509.ParseCertificate(block.Bytes)
-        if err != nil {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:couldnt parse certificate"))
-        }
-        invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
-        invokerAddress := hex.EncodeToString(invokerhash[:])
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:couldnt unmarshal creator"))
+	}
+	block, _ := pem.Decode(id.GetIdBytes())
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:couldnt parse certificate"))
+	}
+	invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
+	invokerAddress := hex.EncodeToString(invokerhash[:])
 
-        invokerAsBytes, err := stub.GetState(invokerAddress)
-        if err != nil || len(invokerAsBytes) == 0 {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::account doesnt exists"))
+	invokerAsBytes, err := stub.GetState(invokerAddress)
+	if err != nil || len(invokerAsBytes) == 0 {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::account doesnt exists"))
 
-        }
+	}
 
-        invokerClient := Client{}
+	invokerClient := Client{}
 
-        err = json.Unmarshal(invokerAsBytes,&invokerClient)
-        if err!=nil {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Error Unmarshalling %s",err.Error()))
-        }
+	err = json.Unmarshal(invokerAsBytes, &invokerClient)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Error Unmarshalling %s", err.Error()))
+	}
 
-        proposalArr:= invokerClient.ProposalArray
+	proposalArr := invokerClient.ProposalArray
 
-        /*if len(proposalArr) == 0 {
-            return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: No proposals found in acount"))
-        }*/
+	/*if len(proposalArr) == 0 {
+	    return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: No proposals found in acount"))
+	}*/
 
-        //flag:=0
+	//flag:=0
 
-        start,err:=strconv.Atoi(args[0])
-        if err!=nil {
-                return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not convert %s to int",args[0]))
-            }
-        end,err:=strconv.Atoi(args[1])
-        if err!=nil {
-                return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not conver %s to int",args[1]))
-            }
+	start, err := strconv.Atoi(args[0])
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not convert %s to int", args[0]))
+	}
+	end, err := strconv.Atoi(args[1])
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not conver %s to int", args[1]))
+	}
 
-        if end >= len(proposalArr) {
-            //return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
-            end=len(proposalArr)-1
-        }
+	if end >= len(proposalArr) {
+		//return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
+		end = len(proposalArr) - 1
+	}
 
-        if start > len(proposalArr) {
-            start =0
-            end =0
-        }
+	if start > len(proposalArr) {
+		start = 0
+		end = 0
+	}
 
+	//if flag == 0 { return shim.Error("chaincode:readProposalByRange:: Propo Not found in account")}
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+	flag := false
+	proposalobj := Proposal{}
 
-        //if flag == 0 { return shim.Error("chaincode:readProposalByRange:: Propo Not found in account")}
-        var buffer bytes.Buffer
-        buffer.WriteString("[")
-        flag:=false
-        proposalobj:=Proposal{}
+	for i := end; i >= start; i-- {
+		if flag == true {
+			buffer.WriteString(",")
+		}
+		proposalAsBytes, err := stub.GetState(proposalArr[i])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not get state of %s", proposalArr[i]))
+		}
 
-        for i:=end;i >= start; i-- {
-            if flag == true {
-                buffer.WriteString(",")
-            }
-            proposalAsBytes,err := stub.GetState(proposalArr[i])
-            if err!=nil {
-                return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not get state of %s",proposalArr[i]))
-            }
+		buffer.WriteString(string(proposalAsBytes))
+		err = json.Unmarshal(proposalAsBytes, &proposalobj)
+		RFQAsBytes, _ := stub.GetState(proposalobj.RFQId)
+		buffer.Truncate(buffer.Len() - 1)
+		buffer.WriteString(",")
+		buffer.WriteString("\"rfqDetails\": ")
+		buffer.WriteString(string(RFQAsBytes))
+		buffer.WriteString("}")
+		flag = true
+	}
+	buffer.WriteString("]")
 
-            buffer.WriteString(string(proposalAsBytes))
-            err=json.Unmarshal(proposalAsBytes,&proposalobj)
-            RFQAsBytes,_:=stub.GetState(proposalobj.RFQId)
-            buffer.Truncate(buffer.Len()-1)
-            buffer.WriteString(",")
-            buffer.WriteString("\"rfqDetails\": ")
-            buffer.WriteString(string(RFQAsBytes))
-            buffer.WriteString("}")
-            flag = true
-        }
-        buffer.WriteString("]")
-
-        return shim.Success(buffer.Bytes())
+	return shim.Success(buffer.Bytes())
 }
