@@ -60,7 +60,7 @@ func (t *InsuranceManagement) ReadAllProposal(stub shim.ChaincodeStubInterface, 
 		buffer.WriteString("[")
 		flag:=false
 		proposalobj:=Proposal{}
-		for i:=0; i < len(proposalArr) ; i++ {
+		for i:=len(proposalArr)-1; i >=0  ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}

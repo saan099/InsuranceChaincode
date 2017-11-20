@@ -60,7 +60,7 @@ func (t *InsuranceManagement) ReadAllPolicy(stub shim.ChaincodeStubInterface, ar
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=0; i < len(policyArr) ; i++ {
+		for i:=len(policyArr)-1 ; i >=0  ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}

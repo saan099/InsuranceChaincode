@@ -60,7 +60,7 @@ func (t *InsuranceManagement) ReadAllQuote(stub shim.ChaincodeStubInterface, arg
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=0; i < len(quoteArr) ; i++ {
+		for i:=len(quoteArr)-1; i >=0  ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}
