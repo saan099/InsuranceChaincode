@@ -18,8 +18,8 @@ import (
 
 func (t *InsuranceManagement) InitClient(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	if len(args) == 1 {
-		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments"))
+	if len(args) != 1 {
+		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments expected 1"))
 	}
 	clientName := args[0]
 
