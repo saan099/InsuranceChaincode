@@ -252,7 +252,7 @@ func (t *InsuranceManagement) ReadSingleProposal(stub shim.ChaincodeStubInterfac
 
 	return shim.Success(readProposalAsBytes)
 }
-}
+
 
 //=================================== Read Single Proposal ================================================================
 
