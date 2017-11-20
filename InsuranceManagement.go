@@ -26,7 +26,7 @@ const RFQ_PROPOSAL_FINALIZED string = "RFQ Proposal Finalized"
 const RFQ_COMPLETED string = "RFQ Completed"
 
 const QUOTE_INITIALIZED string = "Quote Initialized"
-const QUOTE_ACCEPTED string = "Quote Accepted"
+const QUOTE_ACCEPTED string = "Lead Quote Accepted"
 const QUOTE_REJECTED string = "Quote Rejected"
 const QUOTES_FINALIZED string = "Quotes Finalized"
 
@@ -98,20 +98,10 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.SelectLeadInsurerByClient(stub, args)
 	} else if function == "selectLeadInsurerByBroker" {
 		return t.SelectLeadInsurerByBroker(stub, args)
-	} else if function == "readAcc" {
-		return t.ReadAcc(stub, args)
-	} else if function == "readAllRFQ" {
-		return t.ReadAllRFQ(stub, args)
 	} else if function == "acceptLeadQuote" {
 		return t.AcceptLeadQuote(stub, args)
 	} else if function == "rejectLeadQuote" {
 		return t.RejectLeadQuote(stub, args)
-	} else if function == "readSingleRFQ" {
-		return t.ReadSingleRFQ(stub, args)
-	} else if function == "readRFQByRange" {
-		return t.ReadRFQByRange(stub, args)
-	} else if function == "readClientOfBroker" {
-		return t.ReadClientOfBroker(stub, args)
 	} else if function == "finalizeQuotesByClient" {
 		return t.FinalizeQuotesByClient(stub, args)
 	} else if function == "finalizeQuotesByBroker" {
@@ -122,14 +112,24 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.UploadProposalFormByBroker(stub, args)
 	} else if function == "allotProposalNumber" {
 		return t.AllotProposalNumber(stub, args)
+	} else if function == "markPaymentAndGeneratePolicy" {
+		return t.MarkPaymentAndGeneratePolicy(stub, args)
+	} else if function == "readAcc" {
+		return t.ReadAcc(stub, args)
+	} else if function == "readAllRFQ" {
+		return t.ReadAllRFQ(stub, args)
+	} else if function == "readSingleRFQ" {
+		return t.ReadSingleRFQ(stub, args)
+	} else if function == "readRFQByRange" {
+		return t.ReadRFQByRange(stub, args)
+	} else if function == "readClientOfBroker" {
+		return t.ReadClientOfBroker(stub, args)
 	} else if function == "readAllProposal" {
 		return t.ReadAllProposal(stub, args)
 	} else if function == "readSingleProposal" {
 		return t.ReadSingleProposal(stub, args)
 	} else if function == "readProposalByRange" {
 		return t.ReadProposalByRange(stub, args)
-	} else if function == "markPaymentAndGeneratePolicy" {
-		return t.MarkPaymentAndGeneratePolicy(stub, args)
 	} else if function == "readAllInsurers" {
 		return t.ReadAllInsurers(stub, args)
 	} else if function == "readAllQuote" {
