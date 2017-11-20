@@ -17,6 +17,11 @@ import (
 //=========================================================InitBroker=================================================
 
 func (t *InsuranceManagement) InitBroker(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	if len(args) == 1 {
+		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments"))
+	}
+	brokerName := args[0]
 	fmt.Println("init broker called")
 	fmt.Println("=======================================")
 	creator, err := stub.GetCreator()
@@ -49,7 +54,8 @@ func (t *InsuranceManagement) InitBroker(stub shim.ChaincodeStubInterface, args 
 
 	broker := Broker{}
 	broker.BrokerId = brokerAddress
-	broker.BrokerName = cert.Subject.CommonName
+	broker.BrokerName = brokerName
+	broker.UserName = cert.Subject.CommonName
 
 	brokerAsBytes, err := json.Marshal(broker)
 	if err != nil {

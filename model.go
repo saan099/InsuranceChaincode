@@ -3,20 +3,22 @@ package main
 type Client struct {
 	ClientId      string   `json:"clientId"`
 	ClientName    string   `json:"clientName"`
+	UserName      string   `json:"userName"`
 	Policies      []string `json:"policies"`
 	RFQArray      []string `json:"rfqArray"`
 	ProposalArray []string `json:"proposalArray"`
-	Claims		  []string `json:"claims"`
+	Claims        []string `json:"claims"`
 }
 
 type Insurer struct {
 	InsurerId     string   `json:"insurerId"`
 	InsurerName   string   `json:"insurerName"`
+	UserName      string   `json:"userName"`
 	RFQArray      []string `json:"rfqArray"`
 	Quotes        []string `json:"quotes"`
 	Policies      []string `json:"policies"`
 	ProposalArray []string `json:"proposalArray"`
-	Claims		  []string `json:"claims"`
+	Claims        []string `json:"claims"`
 }
 
 type RFQ struct {
@@ -26,6 +28,7 @@ type RFQ struct {
 	TypeOfInsurance    string              `json:"typeOfInsurance"`
 	RiskAmount         float64             `json:"riskAmount"`
 	RiskLocation       string              `json:"riskLocation"`
+	Premium            float64             `json:"premium"`
 	StartDate          string              `json:"startDate"`
 	EndDate            string              `json:"endDate"`
 	Status             string              `json:"status"`
@@ -65,11 +68,12 @@ type Policy struct {
 type Broker struct {
 	BrokerId      string   `json:"brokerId"`
 	BrokerName    string   `json:"brokerName"`
+	UserName      string   `json:"userName"`
 	Clients       []string `json:"clients"`
 	RFQArray      []string `json:"rfqArray"`
 	Policies      []string `json:"policies"`
 	ProposalArray []string `json:"proposalArray"`
-	Claims		  []string `json:"claims"`
+	Claims        []string `json:"claims"`
 }
 
 type Quote struct {
@@ -84,30 +88,31 @@ type Quote struct {
 }
 
 type Claim struct {
-	ClaimId 			string				`json:"claimId"`
-	ClaimType 			string 				`json:"claimType"`
-	ClientId			string				`json:"clientId"`
-	IntimationDate 		string				`json:"intimationDate"`	
-	LossDate 			string				`json:"lossDate"`	
-	PolicyNumber 		string				`json:"policyNumber"`
-	InsuredName 		string				`json:"insuredName"`	
-	LossDescription 	string				`json:"lossDescription"`
-	ClaimAmount 		float64				`json:"claimAmount"`
-	ApprovedAmount 		float64				`json:"approvedAmount"`	
-	Status 				string				`json:"status"`
-	Surveyor			string 				`json:"surveyor"`
-	Report				string 				`json:"report"`
+	ClaimId         string  `json:"claimId"`
+	ClaimType       string  `json:"claimType"`
+	ClientId        string  `json:"clientId"`
+	IntimationDate  string  `json:"intimationDate"`
+	LossDate        string  `json:"lossDate"`
+	PolicyNumber    string  `json:"policyNumber"`
+	InsuredName     string  `json:"insuredName"`
+	LossDescription string  `json:"lossDescription"`
+	ClaimAmount     float64 `json:"claimAmount"`
+	ApprovedAmount  float64 `json:"approvedAmount"`
+	Status          string  `json:"status"`
+	Surveyor        string  `json:"surveyor"`
+	Report          string  `json:"report"`
 }
 
 type Reads struct {
-	Id string `json:"insurerId"`
+	Id   string `json:"insurerId"`
 	Name string `json:"insurerName"`
 }
 
 type Surveyor struct {
-	SurveyorId 			  string			`json:"surveyorId"`
-	SurveyorName		  string			`json:"surveyorName"`
-	PendingInspection   []string			`json:"pendingInspection"`	
-	CompletedInspection []string			`json:"completedInspection"`
+	SurveyorId          string   `json:"surveyorId"`
+	SurveyorName        string   `json:"surveyorName"`
+	UserName            string   `json:"userName"`
+	PendingInspection   []string `json:"pendingInspection"`
+	CompletedInspection []string `json:"completedInspection"`
 	//Claims		  		[]string 			`json:"claims"`
 }
