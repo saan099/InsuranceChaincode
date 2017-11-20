@@ -18,7 +18,7 @@ import (
 
 func (t *InsuranceManagement) InitBroker(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	if len(args) == 1 {
+	if len(args) != 1 {
 		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments"))
 	}
 	brokerName := args[0]

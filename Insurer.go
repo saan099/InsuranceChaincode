@@ -19,7 +19,7 @@ import (
 
 func (t *InsuranceManagement) InitInsurer(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	if len(args) == 1 {
+	if len(args) != 1 {
 		return shim.Error(fmt.Sprintf("chaincode:InitBroker::wrong number of arguments"))
 	}
 	insurerName := args[0]
