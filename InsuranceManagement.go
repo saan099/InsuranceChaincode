@@ -39,6 +39,9 @@ const INTERMEDIARY_CLIENT string = "Intermediary Client"
 const INTERMEDIARY_BROKER string = "Intermediary Broker"
 
 const INSURERS_LIST string = "Insurers List"
+const CLAIM_INITIALIZED string = "Claim Initialized"
+const CLAIM_SURVEYOR_ASSIGNED string = "Claim Surveyor Assigned"
+const CLAIM_INSPECTION_COMPLETED string = "Claim Inspection Completed"
 
 type InsuranceManagement struct {
 }
@@ -142,6 +145,16 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadSinglePolicy(stub, args)
 	} else if function == "readPolicyByRange" {
 		return t.ReadPolicyByRange(stub, args)
+	}else if function == "generateClaimByClient" {
+		return t.GenerateClaimByClient(stub, args)
+	}else if function == "assignSurveyor" {
+		return t.AssignSurveyorToClaim(stub, args)
+	}else if function == "initSurveyor" {
+		return t.InitSurveyor(stub, args)
+	}else if function == "uploadClaimReport" {
+		return t.UploadClaimReport(stub, args)
+	}else if function == "sendClaim" {
+		return t.SendClaim(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

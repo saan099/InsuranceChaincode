@@ -60,7 +60,7 @@ func (t *InsuranceManagement) ReadAllQuote(stub shim.ChaincodeStubInterface, arg
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=0; i < len(quoteArr) ; i++ {
+		for i:=len(quoteArr)-1; i >=0  ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}
@@ -127,9 +127,9 @@ func (t *InsuranceManagement) ReadQuoteByRange(stub shim.ChaincodeStubInterface,
 		if err!=nil {
 				return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::Could not convert %s to int",args[1]))
 			}
-		if end > len(quoteArr) {
+		if end >= len(quoteArr) {
 			//return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::End limit exceeded"))
-			end= len(quoteArr)
+			end= len(quoteArr) - 1
 		}
 
 		if start > len(quoteArr) {
@@ -141,7 +141,7 @@ func (t *InsuranceManagement) ReadQuoteByRange(stub shim.ChaincodeStubInterface,
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=start; i < end ; i++ {
+		for i:=end; i >= start ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}
