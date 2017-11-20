@@ -8,7 +8,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	//"bytes"
-	//"strconv"
+	"strconv"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	mspprotos "github.com/hyperledger/fabric/protos/msp"
@@ -72,7 +72,10 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		claim.LossDate = args[1]
 		claim.LossDescription = args[2]
 		claim.PolicyNumber = args[3]
-		claim.ClaimAmount = args[4]
+		claim.ClaimAmount ,err = strconv.ParseFloat(args[4], 64)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim::Claim Amount not float"))
+		}
 		claim.InsuredName= client.ClientName
 		claim.ClientId = client.ClientId
 		claim.Status = CLAIM_INITIALIZED
@@ -177,14 +180,14 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		return shim.Success(nil)	
 	}
 
-//=================================== Assign Surveyor To Claim ================================================================
+//=================================== Send Claim ================================================================
 func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	
 		//args[0]= Claim Id
-		//args[1]= Surveyor Id
+		//args[1]= amount
 			
 		if len(args) != 2 {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:2 arguments expected"))
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim:2 arguments expected"))
 		}
 	
 		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
@@ -192,20 +195,46 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		err = proto.Unmarshal(creator, id)
 	
 		if err != nil {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:couldnt unmarshal creator"))
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim:couldnt unmarshal creator"))
 		}
 		block, _ := pem.Decode(id.GetIdBytes())
 		cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:couldnt parse certificate"))
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim:couldnt parse certificate"))
 		}
 		invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
 		invokerAddress := hex.EncodeToString(invokerhash[:])
 	
 		invokerAsBytes, err := stub.GetState(invokerAddress)
 		if err != nil || len(invokerAsBytes) == 0 {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::account doesnt exists"))	
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim::account doesnt exists"))	
 		}
+		claim:=Claim{}
+		claimAsBytes,err := stub.GetState(args[0])
+		if err != nil || len(claimAsBytes) == 0 {
+			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::Claim Id doesnt exist"))	
+		}
+		err=json.Unmarshal(claimAsBytes,&claim)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:couldnt unmarshal claim"))
+		}
+		//check if the invoker is Lead Insurer
+		policyAsBytes,err:=stub.GetState(claim.PolicyNumber)
+		policy:=Policy{}
+		err = json.Unmarshal(policyAsBytes,&policy)
+		if policy.Details.LeadInsurer != invokerAddress {
+			return shim.Error("chaincode:asignSurveyorToClaim::Only Lead insurer is allowed to assign surveyor")
+		}
+
+		if claim.Status != CLAIM_INSPECTION_COMPLETED {
+			return shim.Error("chaincode:UploadClaimReport:Inspection report is not done yet")
+		}
+		claim.ApprovedAmount = strconv.ParseFloat(args[1],64)
+		claimAsBytes ,err = json.Marshal(claim)
+
+		err = stub.PutState(claim.ClaimId,claimAsBytes)
+
+		return shim.Success(nil)
 }
 
 //=================================== Upload Claim Report ================================================================
@@ -263,17 +292,34 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 			return shim.Error("chaincode:UploadClaimReport:Claim Id not found in account")
 		}
 
-		if claim.Status == CLAIM_INSPECTION_COMPLETED || len(claim.PolicyNumber) !=0 {
+		if claim.Status == CLAIM_INSPECTION_COMPLETED {
 			return shim.Error("chaincode:UploadClaimReport:Inspection report already uploaded for this claim")
 		}
+
+		//add report to completed
 		claim.Report = args[1] 
 		claim.CompletedInspection = append(claim.CompletedInspection,args[0])
+		claim.Status = CLAIM_INSPECTION_COMPLETED
 
+		//remove claim from pending
 		surveyor.PendingInspection = append(surveyor.PendingInspection[i:],surveyor.PendingInspection[:i+1]...)
 		
-		
+		claimAsBytes, err = json.Marhsal(claim)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt unmarsahl claim2"))
+		}
+		err= stub.PutState(claim.ClaimId,claimAsBytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt putstate claim"))
+		}
+		surveyorAsBytes, err = json.Marshal(surveyor)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt unmarshal surveyor2"))
+		}
+		err = stub.PutState(surveyor.SurveyorId,surveyorAsBytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt putstate surveyor"))
+		}
 
-
-
-
+		return shim.Success(nil)
 	}	

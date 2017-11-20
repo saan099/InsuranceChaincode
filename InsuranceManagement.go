@@ -151,6 +151,10 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.AssignSurveyorToClaim(stub, args)
 	}else if function == "initSurveyor" {
 		return t.InitSurveyor(stub, args)
+	}else if function == "uploadClaimReport" {
+		return t.UploadClaimReport(stub, args)
+	}else if function == "sendClaim" {
+		return t.SendClaim(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))
