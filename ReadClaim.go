@@ -161,6 +161,7 @@ import (
 	Status          string  `json:"status"`
 	Surveyor        string  `json:"surveyor"`
 	Report          string  `json:"report"`
+	Policy			Policy 	`json:"policy"`
 	TransactionHistory []TransactionRecord `json:"transactionHistory"`
 }
 
