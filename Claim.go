@@ -24,9 +24,10 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		//args[2]= Loss Description
 		//args[3]= Policy Number
 		//args[4]= Claim amount
-		//args[5]=InsuredPhone
-		//args[6]=InsuredAddress
-		//args[7]=InsuredEmail
+		//args[5]= Insured Phone
+		//args[6]= Insured Address
+		//args[7]= Insured Email
+		//args[8]= CLaim Type
 		if len(args) != 8 {
 			return shim.Error(fmt.Sprintf("chaincode:generateClaim:8 arguments expected"))
 		}
@@ -88,6 +89,7 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		claim.InsuredPhone = args[5]
 		claim.InsuredAddress = args[6]
 		claim.InsuredEmail = args[7]
+		claim.ClaimType = args[8]
 		claim.InsuredName= client.ClientName
 		claim.ClientId = client.ClientId
 		claim.Status = CLAIM_INITIALIZED
