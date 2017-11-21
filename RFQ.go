@@ -220,17 +220,17 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:couldnt find the client in your stack "))
 	// }
 
-	clientAsBytes, err := stub.GetState(clientId)
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt get client provided by broker"))
-	}
+	// clientAsBytes, err := stub.GetState(clientId)
+	// if err != nil {
+	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt get client provided by broker"))
+	// }
 
-	client := Client{}
-
-	err = json.Unmarshal(clientAsBytes, &client)
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt unmarshal client "))
-	}
+	// client := Client{}
+	//
+	// err = json.Unmarshal(clientAsBytes, &client)
+	// if err != nil {
+	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker::couldnt unmarshal client "))
+	// }
 	rfq := RFQ{}
 	rfq.ClientId = brokerAddress
 	rfq.RFQId = rfqId
@@ -280,22 +280,22 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt marshal rfq"))
 	}
 
-	client.RFQArray = append(client.RFQArray, rfqId)
-
-	finalClientAsBytes, err := json.Marshal(client)
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt marshal rfq"))
-	}
+	// client.RFQArray = append(client.RFQArray, rfqId)
+	//
+	// finalClientAsBytes, err := json.Marshal(client)
+	// if err != nil {
+	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt marshal rfq"))
+	// }
 
 	err = stub.PutState(rfqId, rfqAsBytes)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:couldnt putstate rfq"))
 	}
 
-	err = stub.PutState(clientId, finalClientAsBytes)
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt putstate client"))
-	}
+	// err = stub.PutState(clientId, finalClientAsBytes)
+	// if err != nil {
+	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt putstate client"))
+	// }
 	brokerAsbytes, err := json.Marshal(broker)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker: couldnt marshal broker"))
