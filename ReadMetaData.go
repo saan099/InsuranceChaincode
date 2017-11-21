@@ -45,8 +45,8 @@ import (
 		}
 
 		type ReadData struct {
-			Id			      string 			`json:"id"`
-			RegisteredName	  string 			`json:"registeredName"`
+			Id			      string 			`json:"clientId"`
+			RegisteredName	  string 			`json:"clientName"`
 			UserName		  string			`json:"userName"`
 		}
 
@@ -97,8 +97,8 @@ import (
 		}
 
 		type ReadData struct {
-			Id			      string 			`json:"id"`
-			RegisteredName	  string 			`json:"registeredName"`
+			Id			      string 			`json:"brokerId"`
+			RegisteredName	  string 			`json:"brokerName"`
 			UserName		  string			`json:"userName"`
 		}
 
@@ -148,8 +148,8 @@ import (
 		}
 
 		type ReadData struct {
-			Id			      string 			`json:"id"`
-			RegisteredName	  string 			`json:"registeredName"`
+			Id			      string 			`json:"insurerId"`
+			RegisteredName	  string 			`json:"insurerName"`
 			UserName		  string			`json:"userName"`
 		}
 
@@ -199,12 +199,10 @@ import (
 		}
 
 		type ReadData struct {
-			Id			      string 			`json:"id"`
-			RegisteredName	  string 			`json:"registeredName"`
+			Id			      string 			`json:"SurveyorId"`
+			RegisteredName	  string 			`json:"surveyorName"`
 			UserName		  string			`json:"userName"`
-		}
-
-		
+		}	
 
 		invoker:=Surveyor{}
 		err = json.Unmarshal(invokerAsBytes,&invoker)

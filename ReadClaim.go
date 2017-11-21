@@ -22,8 +22,8 @@ import (
 		//args[0]= Claim Id
 		//args[1]= Claim report hash
 			
-		if len(args) != 0 {
-			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim: 0 arguments expected"))
+		if len(args) != 0 && len(args)!=2{
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim: 0 or 2 arguments expected"))
 		}
 	
 		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
@@ -54,7 +54,21 @@ import (
 		}
 		claim:=Claim{}
 		var claimsArr []Claim
-		for i:=len(client.Claims)-1 ; i >=0 ;i-- {
+
+		start:=0
+		end:=len(client.Claims)-1
+		
+		if len(args) == 2 {
+			start = strconv.Atoi(args[0])
+			end = strconv.Atoi(args[1])
+			if start > end {
+				start = 0
+				end = 0
+			}
+			if end > 
+		}
+
+		for i:=end ; i >=start ;i-- {
 			claimsAsBytes ,err := stub.GetState(client.Claims[i])
 			if err != nil {
 				return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim:couldnt getstate of "+client.Claims[i]))
