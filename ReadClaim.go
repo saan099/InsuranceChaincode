@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	//"strconv"
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -59,13 +59,13 @@ import (
 		end:=len(client.Claims)-1
 		
 		if len(args) == 2 {
-			start = strconv.Atoi(args[0])
-			end = strconv.Atoi(args[1])
+			start,err = strconv.Atoi(args[0])
+			end,err = strconv.Atoi(args[1])
 			if start > end {
 				start = 0
 				end = 0
 			}
-			if end > 
+			
 		}
 
 		for i:=end ; i >=start ;i-- {
