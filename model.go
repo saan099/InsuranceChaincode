@@ -96,6 +96,9 @@ type Claim struct {
 	LossDate        string  `json:"lossDate"`
 	PolicyNumber    string  `json:"policyNumber"`
 	InsuredName     string  `json:"insuredName"`
+	InsuredPhone    string  `json:"insuredPhone"`
+	InsuredAddress  string  `json:"insuredAddress"`
+	InsuredEmail    string  `json:"insuredEmail"`     
 	LossDescription string  `json:"lossDescription"`
 	ClaimAmount     float64 `json:"claimAmount"`
 	ApprovedAmount  float64 `json:"approvedAmount"`

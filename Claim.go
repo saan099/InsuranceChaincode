@@ -24,9 +24,11 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		//args[2]= Loss Description
 		//args[3]= Policy Number
 		//args[4]= Claim amount
-	
-		if len(args) != 5 {
-			return shim.Error(fmt.Sprintf("chaincode:generateClaim:5 arguments expected"))
+		//args[5]=InsuredPhone
+		//args[6]=InsuredAddress
+		//args[7]=InsuredEmail
+		if len(args) != 8 {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim:8 arguments expected"))
 		}
 	
 		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
@@ -83,6 +85,9 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:generateClaim::Claim Amount not float"))
 		}
+		claim.InsuredPhone = args[5]
+		claim.InsuredAddress = args[6]
+		claim.InsuredEmail = args[7]
 		claim.InsuredName= client.ClientName
 		claim.ClientId = client.ClientId
 		claim.Status = CLAIM_INITIALIZED
