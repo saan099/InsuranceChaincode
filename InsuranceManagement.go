@@ -145,17 +145,17 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadSinglePolicy(stub, args)
 	} else if function == "readPolicyByRange" {
 		return t.ReadPolicyByRange(stub, args)
-	}else if function == "generateClaimByClient" {
+	} else if function == "generateClaimByClient" {
 		return t.GenerateClaimByClient(stub, args)
-	}else if function == "assignSurveyor" {
+	} else if function == "assignSurveyor" {
 		return t.AssignSurveyorToClaim(stub, args)
-	}else if function == "initSurveyor" {
+	} else if function == "initSurveyor" {
 		return t.InitSurveyor(stub, args)
-	}else if function == "uploadClaimReport" {
+	} else if function == "uploadClaimReport" {
 		return t.UploadClaimReport(stub, args)
-	}else if function == "sendClaim" {
+	} else if function == "sendClaim" {
 		return t.SendClaim(stub, args)
-	}else if function == "readAllClaim" {
+	} else if function == "readAllClaim" {
 		return t.ReadAllClaim(stub, args)
 	}
 

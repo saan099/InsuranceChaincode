@@ -183,6 +183,7 @@ func (t *InsuranceManagement) ReadSingleRFQ(stub shim.ChaincodeStubInterface, ar
 		TypeOfInsurance    string              `json:"typeOfInsurance"`
 		RiskAmount         float64             `json:"riskAmount"`
 		RiskLocation       string              `json:"riskLocation"`
+		Premium            float64             `json:"premium"`
 		StartDate          string              `json:"startDate"`
 		EndDate            string              `json:"endDate"`
 		Status             string              `json:"status"`
@@ -244,6 +245,7 @@ func (t *InsuranceManagement) ReadSingleRFQ(stub shim.ChaincodeStubInterface, ar
 	rRFQ.RFQId = rfq.RFQId
 	rRFQ.RiskAmount = rfq.RiskAmount
 	rRFQ.RiskLocation = rfq.RiskLocation
+	rRFQ.Premium = rfq.Premium
 	rRFQ.StartDate = rfq.StartDate
 	rRFQ.Status = rfq.Status
 	rRFQ.TransactionHistory = rfq.TransactionHistory
