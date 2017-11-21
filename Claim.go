@@ -190,6 +190,9 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		if policy.Details.LeadInsurer != invokerAddress {
 			return shim.Error("chaincode:asignSurveyorToClaim::Only Lead insurer is allowed to assign surveyor")
 		}
+		if claim.Status == CLAIM_SURVEYOR_ASSIGNED{
+			return shim.Error("chaincode:asignSurveyorToClaim:: Surveyor already assigned for this claim")
+		}
 		transactionRecord := TransactionRecord{}
 		transactionRecord.TxId = stub.GetTxID()
 		timestamp, err := stub.GetTxTimestamp()
@@ -290,6 +293,8 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 			return shim.Error("chaincode:SendClaim:Inspection report is not done yet")
 		}
 		claim.ApprovedAmount,err = strconv.ParseFloat(args[1],64)
+
+		
 
 		claimAsBytes ,err = json.Marshal(claim)
 		policyAsBytes,err = json.Marshal(policy)
