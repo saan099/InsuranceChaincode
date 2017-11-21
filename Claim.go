@@ -68,7 +68,9 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		policyAsBytes,err:=stub.GetState(args[3])
 		policy:=Policy{}
 		err=json.Unmarshal(policyAsBytes,&policy)
-
+		if len(policy.Claim) != 0 {
+			return shim.Error("chaincode:generateClaim::Claim already initiated for this policy")
+		}
 		
 
 		claim:=Claim{}
@@ -85,6 +87,10 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		claim.ClientId = client.ClientId
 		claim.Status = CLAIM_INITIALIZED
 		claim.ClaimId = stub.GetTxID()
+
+		//assign claim to policy
+		policy.Claim = claim.ClaimId
+		
 
 		client.Claims = append(client.Claims,claim.ClaimId)
 
@@ -105,14 +111,34 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 			insurerAsBytes,err = json.Marshal(insurer)
 				err=stub.PutState(insurer.InsurerId,insurerAsBytes)
 		}
+
+		//update Lead insurer 
 		insurerAsBytes,err:=stub.GetState(policy.Details.LeadInsurer)
 		err = json.Unmarshal(insurerAsBytes,&insurer)
 		insurer.Claims = append(insurer.Claims, claim.ClaimId)
+		insurerAsBytes,_ = json.Marshal(insurer)
+		err = stub.PutState(insurer.InsurerId,insurerAsBytes)
 
-		claimAsBytes,err:= json.Marshal(claim)
+		transactionRecord := TransactionRecord{}
+		transactionRecord.TxId = stub.GetTxID()
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim::couldnt get timestamp for transaction"))
+		}
+		transactionRecord.Timestamp = timestamp.String()
+		transactionRecord.Message = "Generated Claim of Id- " + claim.ClaimId + " by " + invokerAddress
+
+		claim.TransactionHistory = append(claim.TransactionHistory, transactionRecord)
+		
+		//append tx history to tx stack of policy
+		policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
+		policyAsBytes ,err = json.Marshal(policy)
+		err = stub.PutState(policy.PolicyNumber,policyAsBytes)
+
+		claimAsBytes,err:= json.Marshal(claim)//update claim
 		err = stub.PutState(claim.ClaimId,claimAsBytes)
 		
-		clientAsBytes,err := json.Marshal(client)
+		clientAsBytes,err := json.Marshal(client)// update client
 		err = stub.PutState(client.ClientId,clientAsBytes)
 
 		return shim.Success(nil)
@@ -164,6 +190,21 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		if policy.Details.LeadInsurer != invokerAddress {
 			return shim.Error("chaincode:asignSurveyorToClaim::Only Lead insurer is allowed to assign surveyor")
 		}
+		transactionRecord := TransactionRecord{}
+		transactionRecord.TxId = stub.GetTxID()
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::couldnt get timestamp for transaction"))
+		}
+		transactionRecord.Timestamp = timestamp.String()
+		transactionRecord.Message = "Surveyor assigned for claim - " + claim.ClaimId + " by " + invokerAddress
+
+		claim.TransactionHistory = append(claim.TransactionHistory, transactionRecord)
+		
+		//append tx history to tx stack of policy
+		policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
+		
+		
 		//check if Surveyor exists
 		surveyorAsBytes,err:= stub.GetState(args[1])
 		if err != nil || len(surveyorAsBytes) == 0 {
@@ -177,8 +218,11 @@ func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInter
 		claim.Surveyor = args[1]
 		claim.Status = CLAIM_SURVEYOR_ASSIGNED	
 		claimAsBytes,err = json.Marshal(claim)	
-
+		policyAsBytes,err = json.Marshal(policy)
+		surveyorAsBytes,err = json.Marshal(surveyor)
+		err = stub.PutState(policy.PolicyNumber,policyAsBytes)
 		err = stub.PutState(claim.ClaimId,claimAsBytes) // update state of claim
+		err = stub.PutState(surveyor.SurveyorId,surveyorAsBytes)
 
 		return shim.Success(nil)	
 	}
@@ -215,26 +259,41 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		claim:=Claim{}
 		claimAsBytes,err := stub.GetState(args[0])
 		if err != nil || len(claimAsBytes) == 0 {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim::Claim Id doesnt exist"))	
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim::Claim Id doesnt exist"))	
 		}
 		err=json.Unmarshal(claimAsBytes,&claim)
 		if err != nil {
-			return shim.Error(fmt.Sprintf("chaincode:asignSurveyorToClaim:couldnt unmarshal claim"))
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim:couldnt unmarshal claim"))
 		}
 		//check if the invoker is Lead Insurer
 		policyAsBytes,err:=stub.GetState(claim.PolicyNumber)
 		policy:=Policy{}
 		err = json.Unmarshal(policyAsBytes,&policy)
 		if policy.Details.LeadInsurer != invokerAddress {
-			return shim.Error("chaincode:asignSurveyorToClaim::Only Lead insurer is allowed to assign surveyor")
+			return shim.Error("chaincode:SendClaim::Only Lead insurer is allowed to send Claim")
 		}
+		transactionRecord := TransactionRecord{}
+		transactionRecord.TxId = stub.GetTxID()
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim::couldnt get timestamp for transaction"))
+		}
+		transactionRecord.Timestamp = timestamp.String()
+		transactionRecord.Message = "Claim amount - "+args[1] +" sent for claim - " + claim.ClaimId + " by " + invokerAddress
+
+		claim.TransactionHistory = append(claim.TransactionHistory, transactionRecord)
+		
+		//append tx history to tx stack of policy
+		policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
 
 		if claim.Status != CLAIM_INSPECTION_COMPLETED {
-			return shim.Error("chaincode:UploadClaimReport:Inspection report is not done yet")
+			return shim.Error("chaincode:SendClaim:Inspection report is not done yet")
 		}
 		claim.ApprovedAmount,err = strconv.ParseFloat(args[1],64)
 
 		claimAsBytes ,err = json.Marshal(claim)
+		policyAsBytes,err = json.Marshal(policy)
+		err = stub.PutState(policy.PolicyNumber,policyAsBytes)
 
 		err = stub.PutState(claim.ClaimId,claimAsBytes)
 
@@ -303,10 +362,26 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		//add report to completed
 		claim.Report = args[1] 		
 		claim.Status = CLAIM_INSPECTION_COMPLETED
+		transactionRecord := TransactionRecord{}
+		transactionRecord.TxId = stub.GetTxID()
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:SendClaim::couldnt get timestamp for transaction"))
+		}
+		transactionRecord.Timestamp = timestamp.String()
+		transactionRecord.Message = "Claim Survey report uploaded for claim - " + claim.ClaimId + " by " + invokerAddress
+
+		claim.TransactionHistory = append(claim.TransactionHistory, transactionRecord)
+		
+		policy:=Policy{}
+		policyAsBytes,_:=stub.GetState(claim.PolicyNumber)
+		err = json.Unmarshal(policyAsBytes,&policy)
+		//append tx history to tx stack of policy
+		policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
 
 		surveyor.CompletedInspection = append(surveyor.CompletedInspection,args[0])
 		//remove claim from pending
-		surveyor.PendingInspection = append(surveyor.PendingInspection[i:],surveyor.PendingInspection[:i+1]...)
+		surveyor.PendingInspection = append(surveyor.PendingInspection[:i],surveyor.PendingInspection[i+1:]...)
 		
 		claimAsBytes, err = json.Marshal(claim)
 		if err != nil {
@@ -324,6 +399,8 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:UploadClaimReport:couldnt putstate surveyor"))
 		}
+		policyAsBytes,err = json.Marshal(policy)
+		err = stub.PutState(policy.PolicyNumber,policyAsBytes)
 
 		return shim.Success(nil)
 	}	

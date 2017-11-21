@@ -62,6 +62,7 @@ type Policy struct {
 	PolicyDocHash      string              `json:"policyDocHash"`
 	Details            RFQ                 `json:"details"`
 	Status             string              `json:"status"`
+	Claim			   string 			   `json:"claim"`
 	TransactionHistory []TransactionRecord `json:"transactionHistory"`
 }
 
@@ -101,6 +102,7 @@ type Claim struct {
 	Status          string  `json:"status"`
 	Surveyor        string  `json:"surveyor"`
 	Report          string  `json:"report"`
+	TransactionHistory []TransactionRecord `json:"transactionHistory"`
 }
 
 type Reads struct {
