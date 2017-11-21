@@ -271,7 +271,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 	readrfq.RFQId = rfq.RFQId
 	readrfq.RiskAmount = rfq.RiskAmount
 	readrfq.RiskLocation = rfq.RiskLocation
-	readRFQ.Premium = rfq.Premium
+	readrfq.Premium = rfq.Premium
 	readrfq.StartDate = rfq.StartDate
 	readrfq.Status = rfq.Status
 	readrfq.TransactionHistory = rfq.TransactionHistory
@@ -288,7 +288,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 			return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Could not marshal readpolicy "))
 		}
 		if quote.QuoteId == rfq.LeadQuote {
-			readRFQ.LeadQuote = quote
+			readrfq.LeadQuote = quote
 		}
 		readrfq.Quotes = append(readrfq.Quotes, quote)
 	}
