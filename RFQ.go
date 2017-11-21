@@ -214,7 +214,7 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 			break
 		}
 	}
-
+	//UNCOMMENT WHEN BROKER REQUIRES CLIENT REGISTRATION FIRST
 	// if flag == 1 {
 	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:couldnt find the client in your stack "))
 	// }
