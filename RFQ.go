@@ -215,9 +215,9 @@ func (t *InsuranceManagement) GenerateRFQByBroker(stub shim.ChaincodeStubInterfa
 		}
 	}
 
-	if flag == 1 {
-		return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:couldnt find the client in your stack "))
-	}
+	// if flag == 1 {
+	// 	return shim.Error(fmt.Sprintf("chaincode:GenerateRFQByBroker:couldnt find the client in your stack "))
+	// }
 
 	clientAsBytes, err := stub.GetState(clientId)
 	if err != nil {
