@@ -28,8 +28,8 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		//args[6]= Insured Address
 		//args[7]= Insured Email
 		//args[8]= CLaim Type
-		if len(args) != 8 {
-			return shim.Error(fmt.Sprintf("chaincode:generateClaim:8 arguments expected"))
+		if len(args) != 9 {
+			return shim.Error(fmt.Sprintf("chaincode:generateClaim:9 arguments expected"))
 		}
 	
 		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
