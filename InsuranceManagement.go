@@ -39,6 +39,7 @@ const INTERMEDIARY_CLIENT string = "Intermediary Client"
 const INTERMEDIARY_BROKER string = "Intermediary Broker"
 
 const INSURERS_LIST string = "Insurers List"
+const SURVEYORS_LIST string = "Surveyors List"
 const CLAIM_INITIALIZED string = "Claim Initialized"
 const CLAIM_SURVEYOR_ASSIGNED string = "Claim Surveyor Assigned"
 const CLAIM_INSPECTION_COMPLETED string = "Claim Inspection Completed"
@@ -71,6 +72,15 @@ func (t *InsuranceManagement) Init(stub shim.ChaincodeStubInterface) pb.Response
 	err = stub.PutState(INSURERS_LIST, InsurerListasBytes)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:Init::couldnt put state insurer list"))
+	}
+	var surveyorArr []string 
+	surveyorListAsBytes, err := json.Marshal(surveyorArr)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:Init::empty surveyor list not marshalled"))
+	}
+	err = stub.PutState(SURVEYORS_LIST, surveyorListAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:Init::couldnt put state surveyor list"))
 	}
 
 	return shim.Success(nil)
@@ -165,6 +175,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadMetaDataBroker(stub, args)
 	}else if function == "readMetaDataSurveyor" {
 		return t.ReadMetaDataSurveyor(stub, args)
+	}else if function == "readSingleClaim" {
+		return t.ReadSingleClaim(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

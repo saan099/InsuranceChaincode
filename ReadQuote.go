@@ -118,30 +118,35 @@ func (t *InsuranceManagement) ReadQuoteByRange(stub shim.ChaincodeStubInterface,
 		/*if len(proposalArr) == 0 {
 			return shim.Error(fmt.Sprintf("chaincode:readAllProposal:: No proposals found in acount"))
 		}*/
-
-		start,err:= strconv.Atoi(args[0])
-		if err!=nil {
-				return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::Could not convert %s to int",args[0]))
-			}
-		end,err:= strconv.Atoi(args[1])
-		if err!=nil {
-				return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::Could not convert %s to int",args[1]))
-			}
-		if end >= len(quoteArr) {
-			//return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange::End limit exceeded"))
-			end= len(quoteArr) - 1
+		start := len(quoteArr) - 1
+	end := 0
+		lowerLimit, err := strconv.Atoi(args[0])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange:lowerlimit not integer"))
 		}
-
-		if start > len(quoteArr) {
-			start =0 
-			end =0
+		upperLimit, err := strconv.Atoi(args[1])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange:upperlimit not integer"))
 		}
+		if upperLimit < lowerLimit {
+			return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange:upperlimit is not bigger than lowerlimit"))
+		}
+		if upperLimit >= len(quoteArr) {
+			end = 0
+
+		} else {
+			end = len(quoteArr) - 1 - upperLimit
+		}
+		if lowerLimit < 0 {
+			return shim.Error(fmt.Sprintf("chaincode:readQuoteByRange:lowerlimit is less than 0"))
+		}
+		start = len(quoteArr) - 1 - lowerLimit
 
 		var buffer bytes.Buffer
 		buffer.WriteString("[")
 		flag:=false
 		//proposalobj:=Proposal{}
-		for i:=end; i >= start ; i-- {
+		for i:=start; i >= end ; i-- {
 			if flag == true {
 				buffer.WriteString(",")
 			}

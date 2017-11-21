@@ -377,25 +377,29 @@ func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterfa
 	}*/
 
 	//flag:=0
+	start := len(proposalArr) - 1
+	end := 0
+	lowerLimit, err := strconv.Atoi(args[0])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:lowerlimit not integer"))
+		}
+		upperLimit, err := strconv.Atoi(args[1])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:upperlimit not integer"))
+		}
+		if upperLimit < lowerLimit {
+			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:upperlimit is not bigger than lowerlimit"))
+		}
+		if upperLimit >= len(proposalArr) {
+			end = 0
 
-	start, err := strconv.Atoi(args[0])
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not convert %s to int", args[0]))
-	}
-	end, err := strconv.Atoi(args[1])
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:readProposalByRange::Could not conver %s to int", args[1]))
-	}
-
-	if end >= len(proposalArr) {
-		//return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:: End limit exceeded"))
-		end = len(proposalArr) - 1
-	}
-
-	if start > len(proposalArr) {
-		start = 0
-		end = 0
-	}
+		} else {
+			end = len(proposalArr) - 1 - upperLimit
+		}
+		if lowerLimit < 0 {
+			return shim.Error(fmt.Sprintf("chaincode:readProposalByRange:lowerlimit is less than 0"))
+		}
+		start = len(proposalArr) - 1 - lowerLimit
 
 	//if flag == 0 { return shim.Error("chaincode:readProposalByRange:: Propo Not found in account")}
 	var buffer bytes.Buffer
@@ -403,7 +407,7 @@ func (t *InsuranceManagement) ReadProposalByRange(stub shim.ChaincodeStubInterfa
 	flag := false
 	proposalobj := Proposal{}
 
-	for i := end; i >= start; i-- {
+	for i := start; i >= end; i-- {
 		if flag == true {
 			buffer.WriteString(",")
 		}

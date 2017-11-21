@@ -86,7 +86,7 @@ func (t *InsuranceManagement) ReadAllRFQ(stub shim.ChaincodeStubInterface, args 
 		if upperLimit < lowerLimit {
 			return shim.Error(fmt.Sprintf("chaincode:readAllRFQ:upperlimit is not bigger than lowerlimit"))
 		}
-		if upperLimit > len(rfqIds) {
+		if upperLimit >= len(rfqIds) {
 			end = 0
 
 		} else {

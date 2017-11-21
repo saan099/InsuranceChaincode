@@ -118,30 +118,35 @@ func (t *InsuranceManagement) ReadPolicyByRange(stub shim.ChaincodeStubInterface
 	/*if len(proposalArr) == 0 {
 		return shim.Error(fmt.Sprintf("chaincode:readAllProposal:: No proposals found in acount"))
 	}*/
+	start := len(policyArr) - 1
+	end := 0
+	lowerLimit, err := strconv.Atoi(args[0])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange:lowerlimit not integer"))
+		}
+		upperLimit, err := strconv.Atoi(args[1])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange:upperlimit not integer"))
+		}
+		if upperLimit < lowerLimit {
+			return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange:upperlimit is not bigger than lowerlimit"))
+		}
+		if upperLimit >= len(policyArr) {
+			end = 0
 
-	start, err := strconv.Atoi(args[0])
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::Could not convert %s to int", args[0]))
-	}
-	end, err := strconv.Atoi(args[1])
-	if err != nil {
-		return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::Could not convert %s to int", args[1]))
-	}
-	if end >= len(policyArr) {
-		//return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange::End limit exceeded"))
-		end = len(policyArr) - 1
-	}
-
-	if start > len(policyArr) {
-		start = 0
-		end = 0
-	}
+		} else {
+			end = len(policyArr) - 1 - upperLimit
+		}
+		if lowerLimit < 0 {
+			return shim.Error(fmt.Sprintf("chaincode:readPolicyByRange:lowerlimit is less than 0"))
+		}
+		start = len(policyArr) - 1 - lowerLimit
 
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 	flag := false
 	//proposalobj:=Proposal{}
-	for i := end; i >= start; i-- {
+	for i := start; i >= end; i-- {
 		if flag == true {
 			buffer.WriteString(",")
 		}
@@ -233,6 +238,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 		ProposalDocHash    string              `json:"proposalDocHash"`
 		ProposalNum        string              `json:"proposalNum"`
 		Intermediary       string              `json:"intermediary"`
+		
 		TransactionHistory []TransactionRecord `json:"transactionHistory"`
 	}
 
@@ -242,6 +248,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 		PolicyDocHash      string              `json:"policyDocHash"`
 		Details            readRFQ             `json:"details"`
 		Status             string              `json:"status"`
+		Claim			   Claim			   `json:"claim"`
 		TransactionHistory []TransactionRecord `json:"transactionHistory"`
 	}
 
@@ -252,7 +259,11 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:readSinglePolicy::Could not get state of %s", args[0]))
 	}
+	
 	err = json.Unmarshal(policyAsBytes, &policy)
+	claimAsBytes,err:= stub.GetState(policy.Claim)
+	claim:=Claim{}
+	err = json.Unmarshal(claimAsBytes,&claim)
 	readpolicy := readPolicy{}
 	readrfq := readRFQ{}
 	rfq := policy.Details
@@ -261,6 +272,7 @@ func (t *InsuranceManagement) ReadSinglePolicy(stub shim.ChaincodeStubInterface,
 	readpolicy.ProposalNum = policy.ProposalNum
 	readpolicy.Status = policy.Status
 	readpolicy.TransactionHistory = policy.TransactionHistory
+	readpolicy.Claim = claim
 
 	readrfq.ClientId = rfq.ClientId
 	readrfq.InsuredName = rfq.InsuredName

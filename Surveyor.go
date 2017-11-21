@@ -21,6 +21,9 @@ import (
 func (t *InsuranceManagement) InitSurveyor(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	//fmt.Println("init client called")
 	//fmt.Println("=========================================")
+	if len(args) != 1 {
+		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::wrong number of arguments"))
+	}
 	creator, err := stub.GetCreator()
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::couldn't get creator"))
@@ -51,6 +54,7 @@ func (t *InsuranceManagement) InitSurveyor(stub shim.ChaincodeStubInterface, arg
 
 	surveyor := Surveyor{}
 	surveyor.SurveyorId = invokerAddress
+	surveyor.UserName = args[0]
 	surveyor.SurveyorName = cert.Subject.CommonName
 
 	invokerAsBytes, err = json.Marshal(surveyor)
@@ -62,6 +66,25 @@ func (t *InsuranceManagement) InitSurveyor(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::couldn't write state "))
 	}
+	var surveyorList []string
+	surveyorListAsbytes, err := stub.GetState(SURVEYORS_LIST)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::couldnt get state of surveyorList"))
+	}
+	err = json.Unmarshal(surveyorListAsbytes, &surveyorList)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::Insurer list not unmarshalled"))
+	}
+	surveyorList = append(surveyorList, invokerAddress)
+	surveyorListAsbytes, err = json.Marshal(surveyorList)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::Insurer list not unmarshalled"))
+	}
+	err = stub.PutState(SURVEYORS_LIST, surveyorListAsbytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:InitSurveyor::Insurer list not put state"))
+	}
+
 	return shim.Success(nil)
 
 }
