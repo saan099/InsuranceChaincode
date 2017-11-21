@@ -65,6 +65,11 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		}
 
 		//err = json.Unmarshal(invokerAsBytes,&client)
+		policyAsBytes,err:=stub.GetState(args[3])
+		policy:=Policy{}
+		err=json.Unmarshal(policyAsBytes,&policy)
+
+		
 
 		claim:=Claim{}
 		// add claim details
@@ -83,9 +88,7 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 
 		client.Claims = append(client.Claims,claim.ClaimId)
 
-		policyAsBytes,err:=stub.GetState(claim.PolicyNumber)
-		policy:=Policy{}
-		err=json.Unmarshal(policyAsBytes,&policy)
+		
 		insurer:=Insurer{}
 
 		//update every insurer with new generated claim
