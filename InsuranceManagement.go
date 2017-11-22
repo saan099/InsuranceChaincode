@@ -43,6 +43,7 @@ const SURVEYORS_LIST string = "Surveyors List"
 const CLAIM_INITIALIZED string = "Claim Initialized"
 const CLAIM_SURVEYOR_ASSIGNED string = "Claim Surveyor Assigned"
 const CLAIM_INSPECTION_COMPLETED string = "Claim Inspection Completed"
+const CLAIM_COMPLETED string = "Claim Completed"
 
 type InsuranceManagement struct {
 }

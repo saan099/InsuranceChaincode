@@ -444,9 +444,11 @@ func (t *InsuranceManagement) SendClaim(stub shim.ChaincodeStubInterface, args [
 		if claim.Status != CLAIM_INSPECTION_COMPLETED {
 			return shim.Error("chaincode:SendClaim:Inspection report is not done yet")
 		}
+		if claim.Status == CLAIM_COMPLETED {
+			return shim.Error("chaincode:SendClaim:Claim amount already Sent")
+		}
 		claim.ApprovedAmount,err = strconv.ParseFloat(args[1],64)
-
-		
+		claim.Status = 	CLAIM_COMPLETED	
 
 		claimAsBytes ,err = json.Marshal(claim)
 		policyAsBytes,err = json.Marshal(policy)
