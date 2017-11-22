@@ -290,8 +290,7 @@ policy:= Policy{}
 				readclaimsArr = append(readclaimsArr,readclaim)
 
 			}	
-		}
-		if args[0] == READ_CLAIM_COMPLETED {
+		}else if args[0] == READ_CLAIM_COMPLETED {
 			start:=len(surveyor.CompletedInspection)-1
 		end:=0
 			for i:=start ; i >=end ;i-- {
