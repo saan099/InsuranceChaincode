@@ -44,6 +44,8 @@ const CLAIM_INITIALIZED string = "Claim Initialized"
 const CLAIM_SURVEYOR_ASSIGNED string = "Claim Surveyor Assigned"
 const CLAIM_INSPECTION_COMPLETED string = "Claim Inspection Completed"
 const CLAIM_COMPLETED string = "Claim Completed"
+const READ_CLAIM_PENDING string = "Read Claim Pending"
+const READ_CLAIM_COMPLETED string = "Read Claim Completed"
 
 type InsuranceManagement struct {
 }
@@ -182,6 +184,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadSingleClaim(stub, args)
 	}else if function == "generateClaimByBroker" {
 		return t.GenerateClaimByBroker(stub, args)
+	}else if function == "readAllClaimSurveyor" {
+		return t.ReadAllClaimSurveyor(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

@@ -19,8 +19,7 @@ import (
 //=================================== Read All Claim ================================================================
 	func (t *InsuranceManagement) ReadAllClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	
-		//args[0]= Claim Id
-		//args[1]= Claim report hash
+		
 			
 		if len(args) != 0 && len(args)!=2{
 			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim: 0 or 2 arguments expected"))
@@ -207,4 +206,113 @@ policy:= Policy{}
 
 		return shim.Success(readAsBytes)
 
+	}
+
+
+//=================================== Read All Claim Surveyor ================================================================
+	func (t *InsuranceManagement) ReadAllClaimSurveyor(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	
+
+		if len(args) != 1 {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor: 1 argument expected"))
+		}
+	
+		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
+		id := &mspprotos.SerializedIdentity{}
+		err = proto.Unmarshal(creator, id)
+	
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor:couldnt unmarshal creator"))
+		}
+		block, _ := pem.Decode(id.GetIdBytes())
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor:couldnt parse certificate"))
+		}
+		invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
+		invokerAddress := hex.EncodeToString(invokerhash[:])
+	
+		invokerAsBytes, err := stub.GetState(invokerAddress)
+		if err != nil || len(invokerAsBytes) == 0 {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor::account doesnt exists"))	
+		}
+
+		surveyor:= Surveyor{}
+
+		err = json.Unmarshal(invokerAsBytes,&surveyor)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor:couldnt unmarshal invoker"))
+		}
+		//claim:=Claim{}
+		//var claimsArr []Claim
+
+		// start:=len(surveyor.PendingInspection)-1
+		// end:=0
+		
+		
+type ReadClaim struct {
+	ClaimId         string  `json:"claimId"`
+	ClaimType       string  `json:"claimType"`
+	ClientId        string  `json:"clientId"`
+	IntimationDate  string  `json:"intimationDate"`
+	LossDate        string  `json:"lossDate"`
+	PolicyNumber    string  `json:"policyNumber"`
+	InsuredName     string  `json:"insuredName"`
+	InsuredPhone    string  `json:"insuredPhone"`
+	InsuredAddress  string  `json:"insuredAddress"`
+	InsuredEmail    string  `json:"insuredEmail"`     
+	LossDescription string  `json:"lossDescription"`
+	ClaimAmount     float64 `json:"claimAmount"`
+	ApprovedAmount  float64 `json:"approvedAmount"`
+	Status          string  `json:"status"`
+	Surveyor        string  `json:"surveyor"`
+	Report          string  `json:"report"`
+	Policy			Policy 	`json:"policy"`
+	TransactionHistory []TransactionRecord `json:"transactionHistory"`
+}
+readclaim:=ReadClaim{}
+var readclaimsArr []ReadClaim
+policy:= Policy{}
+		if args[0] == READ_CLAIM_PENDING {
+			start:=len(surveyor.PendingInspection)-1
+		end:=0                                                                                                                 
+			for i:=start ; i >=end ;i-- {
+				claimsAsBytes ,err := stub.GetState(surveyor.PendingInspection[i])
+				if err != nil {
+					return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor:couldnt getstate of "+surveyor.PendingInspection[i]))
+				}
+				err = json.Unmarshal(claimsAsBytes,&readclaim)
+
+				policyAsBytes,err := stub.GetState(readclaim.PolicyNumber)
+				err = json.Unmarshal(policyAsBytes,&policy)
+				readclaim.Policy = policy
+
+				readclaimsArr = append(readclaimsArr,readclaim)
+
+			}	
+		}
+		if args[0] == READ_CLAIM_COMPLETED {
+			start:=len(surveyor.CompletedInspection)-1
+		end:=0
+			for i:=start ; i >=end ;i-- {
+				claimsAsBytes ,err := stub.GetState(surveyor.CompletedInspection[i])
+				if err != nil {
+					return shim.Error(fmt.Sprintf("chaincode:ReadAllClaimSurveyor:couldnt getstate of "+surveyor.CompletedInspection[i]))
+				}
+				err = json.Unmarshal(claimsAsBytes,&readclaim)	
+
+				policyAsBytes,err := stub.GetState(readclaim.PolicyNumber)
+				err = json.Unmarshal(policyAsBytes,&policy)
+				readclaim.Policy = policy
+
+				readclaimsArr = append(readclaimsArr,readclaim)
+
+			}
+		}else {
+			return shim.Error("chaincode:ReadAllClaimSurveyor:Keyword not valid")
+		}
+		
+		claimsArrAsBytes,err := json.Marshal(readclaimsArr)
+
+		return shim.Success(claimsArrAsBytes)	
 	}
