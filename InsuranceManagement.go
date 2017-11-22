@@ -144,7 +144,9 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadProposalByRange(stub, args)
 	} else if function == "readAllInsurers" {
 		return t.ReadAllInsurers(stub, args)
-	} else if function == "readAllQuote" {
+	}else if function == "readAllSurveyors" {
+		return t.ReadAllSurveyors(stub, args)
+	}else if function == "readAllQuote" {
 		return t.ReadAllQuote(stub, args)
 	} else if function == "readQuoteByRange" {
 		return t.ReadQuoteByRange(stub, args)
@@ -259,6 +261,52 @@ func (t *InsuranceManagement) ReadAllInsurers(stub shim.ChaincodeStubInterface, 
 	}
 
 	return shim.Success(newOutputInsurersAsbytes)
+
+}
+
+func (t *InsuranceManagement) ReadAllSurveyors(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 0 {
+		return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::Expected no arguments"))
+	}
+
+	var surveyorList []string
+	surveyorListAsbytes, err := stub.GetState(SURVEYORS_LIST)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::couldnt get state of surveyorList"))
+	}
+	err = json.Unmarshal(surveyorListAsbytes, &surveyorList)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::surveyor list not unmarshalled"))
+	}
+	type surveyorNameAddress struct {
+		Name    string `json:"name"`
+		Address string `json:"address"`
+	}
+
+	var outputsurveyors []surveyorNameAddress
+
+	for i := range surveyorList {
+		surveyor := Surveyor{}
+		surveyorasbytes, err := stub.GetState(surveyorList[i])
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::Something is wrong, surveyor is missing"))
+		}
+		err = json.Unmarshal(surveyorasbytes, &surveyor)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::surveyor couldnt get unmarshalled"))
+		}
+		outputsurveyor := surveyorNameAddress{}
+		outputsurveyor.Address = surveyor.SurveyorId
+		outputsurveyor.Name = surveyor.SurveyorName
+		outputsurveyors = append(outputsurveyors, outputsurveyor)
+	}
+
+	newOutputsurveyorsAsbytes, err := json.Marshal(outputsurveyors)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:ReadAllSurveyors::couldnt marshal output of surveyors list"))
+	}
+
+	return shim.Success(newOutputsurveyorsAsbytes)
 
 }
 
