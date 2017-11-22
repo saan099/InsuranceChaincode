@@ -177,6 +177,8 @@ func (t *InsuranceManagement) Invoke(stub shim.ChaincodeStubInterface) pb.Respon
 		return t.ReadMetaDataSurveyor(stub, args)
 	}else if function == "readSingleClaim" {
 		return t.ReadSingleClaim(stub, args)
+	}else if function == "generateClaimByBroker" {
+		return t.GenerateClaimByBroker(stub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("chaincode:Invoke::NO such function exists"))

@@ -24,6 +24,11 @@ func (t *InsuranceManagement) MarkPaymentAndGeneratePolicy(stub shim.ChaincodeSt
 	policyNumber := args[1]
 	policyDocHash := args[2]
 
+	policybytes,err:=stub.GetState(policyNumber)
+	if len(policybytes) != 0 {
+		return shim.Error("chaincode:MarkPaymentAndGeneratePolicy::Policy already exists")
+	}
+
 	creator, err := stub.GetCreator() // it'll give the certificate of the invoker
 	id := &mspprotos.SerializedIdentity{}
 	err = proto.Unmarshal(creator, id)

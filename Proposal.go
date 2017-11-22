@@ -67,9 +67,13 @@ func (t *InsuranceManagement) UploadProposalFormByClient(stub shim.ChaincodeStub
 	if err != nil {
 		return shim.Error(fmt.Sprintf("chaincode:UploadProposalFormByClient::rfq couldnt get unmarshalled"))
 	}
+	//if rfq.Status == RFQ_PROPOSAL_FINALIZED {
+	//	return shim.Error("chaincode:UploadProposalFormByClient::rfq quotes already finalized")
+	//}
 	if rfq.Status != RFQ_QUOTES_FINALIZED {
 		return shim.Error(fmt.Sprintf("chaincode:UploadProposalFormByClient::rfq quotes not finalized yet"))
 	}
+	
 
 	rfq.Status = RFQ_PROPOSAL_FINALIZED
 	rfq.ProposalDocHash = proposalFormHash

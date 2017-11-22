@@ -151,6 +151,151 @@ func (t *InsuranceManagement) GenerateClaimByClient(stub shim.ChaincodeStubInter
 		return shim.Success(nil)
 	}
 
+//=================================== Generate Claim By Broker================================================================
+func (t *InsuranceManagement) GenerateClaimByBroker(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	
+		//args[0]= Intimation Date
+		//args[1]= Loss Date
+		//args[2]= Loss Description
+		//args[3]= Policy Number
+		//args[4]= Claim amount
+		//args[5]= Insured Phone
+		//args[6]= Insured Address
+		//args[7]= Insured Email
+		//args[8]= CLaim Type
+		if len(args) != 9 {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:9 arguments expected"))
+		}
+	
+		creator, err := stub.GetCreator() // it'll give the certificate of the invoker
+		id := &mspprotos.SerializedIdentity{}
+		err = proto.Unmarshal(creator, id)
+	
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:couldnt unmarshal creator"))
+		}
+		block, _ := pem.Decode(id.GetIdBytes())
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:couldnt parse certificate"))
+		}
+		invokerhash := sha256.Sum256([]byte(cert.Subject.CommonName + cert.Issuer.CommonName))
+		invokerAddress := hex.EncodeToString(invokerhash[:])
+	
+		
+
+		brokerAsBytes, err := stub.GetState(invokerAddress)
+	if err != nil || brokerAsBytes == nil {
+		shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker::account doesnt exists"))
+
+	}
+	broker := Broker{}
+
+	err = json.Unmarshal(brokerAsBytes, &broker)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:couldnt unmarshal broker "))
+	}
+		flag:=false
+		
+		//err = json.Unmarshal(invokerAsBytes,&client)
+		for i:=0 ; i < len(broker.Policies); i++ {
+			if args[3] == broker.Policies[i] {
+				flag = true 
+				break
+			}
+		}
+
+		if flag == false {
+			return shim.Error("chaincode:GenerateClaimByBroker::Policy number doesnt exist in account")
+		}
+
+		//err = json.Unmarshal(invokerAsBytes,&client)
+		policyAsBytes,err:=stub.GetState(args[3])
+		policy:=Policy{}
+		err=json.Unmarshal(policyAsBytes,&policy)
+		if len(policy.Claim) != 0 {
+			return shim.Error("chaincode:GenerateClaimByBroker::Claim already initiated for this policy")
+		}
+		
+
+		claim:=Claim{}
+		// add claim details
+		claim.IntimationDate = args[0]
+		claim.LossDate = args[1]
+		claim.LossDescription = args[2]
+		claim.PolicyNumber = args[3]
+		claim.ClaimAmount ,err = strconv.ParseFloat(args[4], 64)
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker::Claim Amount not float"))
+		}
+		claim.InsuredPhone = args[5]
+		claim.InsuredAddress = args[6]
+		claim.InsuredEmail = args[7]
+		claim.ClaimType = args[8]
+		claim.InsuredName= policy.Details.InsuredName
+		claim.ClientId = invokerAddress
+		claim.Status = CLAIM_INITIALIZED
+		claim.ClaimId = stub.GetTxID()
+
+		//assign claim to policy
+		policy.Claim = claim.ClaimId
+		
+
+		broker.Claims = append(broker.Claims,claim.ClaimId)
+
+		
+		insurer:=Insurer{}
+
+		//update every insurer with new generated claim
+		for i:=0 ; i < len(policy.Details.SelectedInsurer) ; i++ {
+			insurerAsBytes,err:= stub.GetState(policy.Details.SelectedInsurer[i])
+			if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:couldnt get Insurers"))
+		}
+			err = json.Unmarshal(insurerAsBytes,&insurer)
+			if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker:couldnt UNmarshal insurer"))
+		}
+			insurer.Claims = append(insurer.Claims,claim.ClaimId)
+			insurerAsBytes,err = json.Marshal(insurer)
+				err=stub.PutState(insurer.InsurerId,insurerAsBytes)
+		}
+
+		//update Lead insurer 
+		insurerAsBytes,err:=stub.GetState(policy.Details.LeadInsurer)
+		err = json.Unmarshal(insurerAsBytes,&insurer)
+		insurer.Claims = append(insurer.Claims, claim.ClaimId)
+		insurerAsBytes,_ = json.Marshal(insurer)
+		err = stub.PutState(insurer.InsurerId,insurerAsBytes)
+
+		transactionRecord := TransactionRecord{}
+		transactionRecord.TxId = stub.GetTxID()
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			return shim.Error(fmt.Sprintf("chaincode:GenerateClaimByBroker::couldnt get timestamp for transaction"))
+		}
+		transactionRecord.Timestamp = timestamp.String()
+		transactionRecord.Message = "Generated Claim of Id- " + claim.ClaimId + " by " + invokerAddress
+
+		claim.TransactionHistory = append(claim.TransactionHistory, transactionRecord)
+		
+		//append tx history to tx stack of policy
+		policy.TransactionHistory = append(policy.TransactionHistory, transactionRecord)
+		policyAsBytes ,err = json.Marshal(policy)
+		err = stub.PutState(policy.PolicyNumber,policyAsBytes)
+
+		claimAsBytes,err:= json.Marshal(claim)//update claim
+		err = stub.PutState(claim.ClaimId,claimAsBytes)
+		
+		brokerAsBytes,err = json.Marshal(broker)// update broker
+		err = stub.PutState(broker.BrokerId,brokerAsBytes)
+
+		return shim.Success(nil)
+	}
+
+
+
+
 
 //=================================== Assign Surveyor To Claim ================================================================
 func (t *InsuranceManagement) AssignSurveyorToClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {

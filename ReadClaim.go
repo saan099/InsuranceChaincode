@@ -52,8 +52,8 @@ import (
 		if err != nil {
 			return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim:couldnt unmarshal invoker"))
 		}
-		claim:=Claim{}
-		var claimsArr []Claim
+		//claim:=Claim{}
+		//var claimsArr []Claim
 
 		start:=len(client.Claims)-1
 		end:=0
@@ -81,16 +81,44 @@ import (
 		}
 		start = len(client.Claims) - 1 - lowerLimit
 	}
-
+type ReadClaim struct {
+	ClaimId         string  `json:"claimId"`
+	ClaimType       string  `json:"claimType"`
+	ClientId        string  `json:"clientId"`
+	IntimationDate  string  `json:"intimationDate"`
+	LossDate        string  `json:"lossDate"`
+	PolicyNumber    string  `json:"policyNumber"`
+	InsuredName     string  `json:"insuredName"`
+	InsuredPhone    string  `json:"insuredPhone"`
+	InsuredAddress  string  `json:"insuredAddress"`
+	InsuredEmail    string  `json:"insuredEmail"`     
+	LossDescription string  `json:"lossDescription"`
+	ClaimAmount     float64 `json:"claimAmount"`
+	ApprovedAmount  float64 `json:"approvedAmount"`
+	Status          string  `json:"status"`
+	Surveyor        string  `json:"surveyor"`
+	Report          string  `json:"report"`
+	Policy			Policy 	`json:"policy"`
+	TransactionHistory []TransactionRecord `json:"transactionHistory"`
+}
+readclaim:=ReadClaim{}
+var readclaimsArr []ReadClaim
+policy:= Policy{}
 		for i:=start ; i >=end ;i-- {
 			claimsAsBytes ,err := stub.GetState(client.Claims[i])
 			if err != nil {
 				return shim.Error(fmt.Sprintf("chaincode:ReadAllClaim:couldnt getstate of "+client.Claims[i]))
 			}
-			err = json.Unmarshal(claimsAsBytes,&claim)
-			claimsArr = append(claimsArr,claim)
+			err = json.Unmarshal(claimsAsBytes,&readclaim)
+			
+			policyAsBytes,err := stub.GetState(readclaim.PolicyNumber)
+			err = json.Unmarshal(policyAsBytes,&policy)
+			readclaim.Policy = policy
+
+			readclaimsArr = append(readclaimsArr,readclaim)
+			
 		}
-		claimsArrAsBytes,err := json.Marshal(claimsArr)
+		claimsArrAsBytes,err := json.Marshal(readclaimsArr)
 
 		return shim.Success(claimsArrAsBytes)	
 	}
